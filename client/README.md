@@ -1,4 +1,4 @@
-# client
+# Frontend part for SPS project
 
 ## Project setup
 ```
