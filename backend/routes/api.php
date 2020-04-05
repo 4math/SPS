@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SocketsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/users', 'UsersController@index');
+
+Route::get('/sockets', 'SocketsController@index');
+Route::get('/sockets/create', 'SocketsController@create');
+Route::put('/sockets/{id}', 'SocketsController@update');
+Route::delete('/sockets/{id}', 'SocketsController@delete');

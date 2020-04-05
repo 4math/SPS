@@ -8,6 +8,6 @@ class Data extends Model
 {
     public function socket()
     {
-        return $this->belongsTo('App\Socket');
+        return $this->belongsTo(Socket::class);
     }
 }
