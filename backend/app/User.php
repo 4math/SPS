@@ -24,6 +24,6 @@ class User extends Authenticatable
     
     public function sockets()
     {
-        return $this->hasMany('App\Socket');
+        return $this->hasMany(Socket::class);
     }
 }

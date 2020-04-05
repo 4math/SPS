@@ -15,7 +15,7 @@ class CreateDataTable extends Migration
     {
         Schema::create('data', function (Blueprint $table) {
             $table->bigInteger('socket_id')->unsigned();
-            $table->foreign('socket_id')->references('id')->on('sockets');
+            $table->foreign('socket_id')->references('id')->on('sockets')->onDelete('cascade');
 
             $table->float('power');
             $table->timestamps();
