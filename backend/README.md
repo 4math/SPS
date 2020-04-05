@@ -10,12 +10,17 @@
 
 ## Backend setup :
 
-Create application key
+- Initialise laravel
+```
+composer install
+```
+- Fill the .env.example file and rename it to .env
+- Create application key
 ```
 php artisan key:generate
 ```
 
-- Fill the .env.example file and rename it to .env
+
 - Keep your credentials private!
 
 ## Serve the application on the PHP development server :
