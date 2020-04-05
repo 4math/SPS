@@ -14,11 +14,10 @@ class CreateDataTable extends Migration
     public function up()
     {
         Schema::create('data', function (Blueprint $table) {
-            // Indicates which socket does the data belong to
-            $table->bigInteger('socket_id');
+            $table->bigInteger('socket_id')->unsigned();
+            $table->foreign('socket_id')->references('id')->on('sockets');
 
             $table->float('power');
-            
             $table->timestamps();
         });
     }
