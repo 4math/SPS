@@ -19,7 +19,10 @@ composer install
 ```
 php artisan key:generate
 ```
-
+- Update database after the changes
+```
+composer dumpautoload
+```
 
 - Keep your credentials private!
 
