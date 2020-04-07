@@ -14,6 +14,15 @@ class SocketsController extends Controller
         return response(Socket::all()->jsonSerialize(), Response::HTTP_OK);
     }
 
+    public function show($id)
+    {
+        if ($socket = Socket::find($id)) {
+            return response($socket->jsonSerialize(), Response::HTTP_FOUND);
+        } else {
+            return response(null, Response::HTTP_NO_CONTENT);
+        }
+    }
+
     public function create(Faker $faker, Request $request)
     {
         $socket = new Socket([
@@ -27,17 +36,20 @@ class SocketsController extends Controller
 
     public function update(Request $request, $id)
     {
-        $socket = Socket::findOrFail($id);
-        $socket->name = $request->name;
-        $socket->save();
-        return response($socket->jsonSerialize(), Response::HTTP_OK);
+        if ($socket = Socket::find($id)) {
+            $socket->name = $request->name;
+            $socket->save();
+            return response($socket->jsonSerialize(), Response::HTTP_OK);
+        } else {
+            return response('Not found', Response::HTTP_BAD_REQUEST);
+        }
     }
 
     public function delete($id)
     {
-        if(Socket::destroy($id))
-            return response('Deleted', Response::HTTP_OK);
+        if (Socket::destroy($id))
+            return response(null, Response::HTTP_OK);
         else
-            return response('Already deleted', Response::HTTP_BAD_REQUEST);
+            return response('Not found', Response::HTTP_BAD_REQUEST);
     }
 }

@@ -17,12 +17,13 @@ use Illuminate\Support\Str;
 |
 */
 
-$factory->define(User::class, function (Faker $faker) {
+$factory->define(User::class, function (Faker $faker) 
+{
     return [
-        'name' => $faker->name,
+        'name' => $faker->firstName(),
         'email' => $faker->unique()->safeEmail,
-        'password' => $faker->password(), // password
-        'api_token' => Str::random(32),
+        'password' => $faker->password(),
+        'api_token' => $faker->unique()->asciify(Str::random(64)),
         'created_at' => $faker->dateTimeThisYear(),
         'updated_at' => now(),
     ];
