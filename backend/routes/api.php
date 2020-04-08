@@ -4,12 +4,26 @@ use App\Http\Controllers\SocketsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::middleware('auth:api')->get('/user', function (Request $request) {
+	return $request->user();
+});
+
+Route::prefix('auth')->group(function () {
+	Route::post('register', 'AuthController@register');
+	Route::post('login', 'AuthController@login');
+	Route::get('refresh', 'AuthController@refresh');
+	Route::group(['middleware' => 'auth:api'], function () {
+		Route::get('user', 'AuthController@user');
+		Route::post('logout', 'AuthController@logout');
+	});
+});
+
 // Users
 Route::get('/users', 'UsersController@index');
-Route::get('/users/create', 'UsersController@create');
-Route::get('/users/{id}', 'UsersController@show');
-Route::put('/users/{id}', 'UsersController@update');
-Route::delete('/users/{id}', 'UsersController@delete');
+Route::middleware('auth:api')->get('/users/create', 'UsersController@create');
+Route::middleware('auth:api')->get('/users/{id}', 'UsersController@show');
+Route::middleware('auth:api')->put('/users/{id}', 'UsersController@update');
+Route::middleware('auth:api')->delete('/users/{id}', 'UsersController@delete');
 
 
 // Sockets

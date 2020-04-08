@@ -21,7 +21,7 @@ class CreateUsersTable extends Migration
 
             // An API token assigned to user
             // Is used in communication with front end
-            $table->string('api_token', 120)->unique();
+            $table->string('api_token', 120)->unique()->default("");
 
             // Records the time user been created and updated
             $table->timestamps();
