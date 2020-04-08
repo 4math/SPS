@@ -19,7 +19,14 @@ composer install
 ```
 php artisan key:generate
 ```
-
+- Generate JWT key
+```
+php artisan jwt:secret
+```
+- Update database after the changes
+```
+composer dumpautoload
+```
 
 - Keep your credentials private!
 
