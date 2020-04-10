@@ -11,7 +11,7 @@ const ifNotAuth = (to, from, next) => {
         return;
     }
     next('/');
-}
+};
 
 const ifAuth = (to, from, next) => {
     if (store.getters.isAuthenticated) {
@@ -19,7 +19,7 @@ const ifAuth = (to, from, next) => {
         return;
     }
     next('/login');
-}
+};
 
 
 const router = new Router({
