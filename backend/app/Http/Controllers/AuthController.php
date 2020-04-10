@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Response;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Carbon\Carbon;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
@@ -33,11 +36,34 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // $credentials = $request->only('email', 'password');
+        // if ($token = $this->guard()->attempt($credentials)) {
+        //     return response()->json(['status' => 'success'], Response::HTTP_OK)->header('Authorization', $token);
+        // }
+        // return response()->json(['error' => 'login_error'], 401);
+
+        //Another version. Error checking with try...catch is possible
         $credentials = $request->only('email', 'password');
-        if ($token = $this->guard()->attempt($credentials)) {
-            return response()->json(['status' => 'success'], Response::HTTP_OK)->header('Authorization', $token);
+        try {
+            $token = JWTAuth::attempt($credentials, [
+                'exp' => Carbon::now()->addWeek()->timestamp,
+            ]);
+        } catch (JWTException $e) {
+            return response()->json([
+                'error' => 'Could not authenticate',
+            ], 401);
         }
-        return response()->json(['error' => 'login_error'], 401);
+
+        if (!$token) {
+            return response()->json([
+                'error' => 'Could not authenticate',
+            ], 401);
+        } else {
+            return response()->json([
+                'status' => 'success',
+                'token' => $token
+            ]);
+        }
     }
 
     public function logout()
