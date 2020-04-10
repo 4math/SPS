@@ -29,10 +29,6 @@ const router = new Router({
             path: '/',
             name: 'HelloWorld',
             component: HelloWorld,
-            meta: {
-                //public route 
-                auth: undefined
-            }
         },
         {
             path: '/login',

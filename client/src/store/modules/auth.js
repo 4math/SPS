@@ -25,8 +25,15 @@ const actions = {
 
         return new Promise((resolve, reject) => {
             commit(AUTH_REQUEST);
+            console.log(user);
             axios.post('http://localhost:8000/api/auth/login', {
-                user
+                data: {
+                    ...user,
+                }
+            }, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
             })
                 .then(response => {
                     const token = response.data.token;
