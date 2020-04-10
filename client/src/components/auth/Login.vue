@@ -5,7 +5,6 @@
         </h1>
 
         <form action="#" @submit.prevent="login">
-
             <div class="form-input">
                 <label for="email">E-mail:</label>
                 <br />
@@ -27,13 +26,13 @@
             <div class="form-input">
                 <button class="submit-btn" type="submit">Submit</button>
             </div>
-
         </form>
-
     </div>
 </template>
 
 <script>
+import AUTH_REQUEST from "@/store/actions/auth.js";
+
 export default {
     name: "Login",
     data() {
@@ -43,9 +42,16 @@ export default {
         };
     },
     methods: {
-      login() {
-        this.$store.dispatch('retrieveToken');
-      }
+        login() {
+            this.$store
+                .dispatch(AUTH_REQUEST, {
+                    email: this.email,
+                    password: this.password
+                })
+                .then(() => {
+                    this.$router.push("/");
+                });
+        }
     }
 };
 </script>
