@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <h1>Welcome to the home page!</h1>
     <img alt="Vue logo" src="./../../assets/logo.png">
     <HelloWorld msg="Welcome to Your Vue.js App"/>
     <a href="auth.html">Go to the authorization</a>

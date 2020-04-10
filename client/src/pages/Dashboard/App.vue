@@ -1,16 +1,8 @@
 <template>
 
   <div id="app">
-    <h1>Welcome to the Authorization!</h1>
-    <label for="login">Login: </label>
-    <input type="text" id="login">
-    <br>
-
-    <label for="pass">Password: </label>
-    <input type="text" id="pass">
-    <br>
     
-    <a href="home.html">Back to the home screen</a>
+    <h1>Welcome to the dashboard!</h1>
 
   </div>
 
@@ -36,8 +28,4 @@ export default {
   margin-top: 60px;
 }
 
-input {
-  border-radius: 5px;
-  margin: 10px;
-}
 </style>
