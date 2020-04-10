@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import AUTH_REQUEST from "@/store/actions/auth.js";
+import { AUTH_REQUEST } from "@/store/actions/auth.js";
 
 export default {
     name: "Login",
