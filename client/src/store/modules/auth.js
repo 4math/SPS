@@ -7,6 +7,8 @@ import {
     AUTH_LOGOUT
 } from "../actions/auth";
 
+import { USER_REQUEST } from './../actions/user';
+
 const state = {
     token: localStorage.getItem('user-token') || '',
     status: ''
@@ -23,7 +25,9 @@ const actions = {
 
         return new Promise((resolve, reject) => {
             commit(AUTH_REQUEST);
-            axios({ url: '/api/auth/login', data: user, method: 'POST' })
+            axios.post('http://localhost:8000/api/auth/login', {
+                user
+            })
                 .then(response => {
                     const token = response.data.token;
                     // store the token in localstorage
@@ -44,8 +48,8 @@ const actions = {
 
     },
 
-    [AUTH_LOGOUT]: ({commit}) => {
-        return new Promise((resolve, _reject) => {
+    [AUTH_LOGOUT]: ({ commit }) => {
+        return new Promise((resolve) => {
             commit(AUTH_LOGOUT);
             delete axios.defaults.headers.common['Authorization'];
             localStorage.removeItem('user-token');
