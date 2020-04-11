@@ -2,6 +2,7 @@ import Router from 'vue-router';
 import HelloWorld from '@/components/HelloWorld';
 import Login from '@/components/auth/Login';
 import Dashboard from '@/components/Dashboard';
+import Register from '@/components/auth/Register';
 import store from '@/store';
 
 
@@ -34,6 +35,15 @@ const router = new Router({
             path: '/login',
             name: 'Login',
             component: Login,
+            meta: {
+                auth: false
+            },
+            beforeEnter: ifNotAuth
+        },
+        {
+            path: '/register',
+            name: 'Register',
+            component: Register,
             meta: {
                 auth: false
             },
