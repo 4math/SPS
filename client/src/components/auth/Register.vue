@@ -1,10 +1,17 @@
+
 <template>
-    <div id="login-form">
+    <div id="register-form">
         <h1>
-            <b>Welcome to the Login Page!</b>
+            <b>Welcome to the Register Page!</b>
         </h1>
 
-        <form action="#" @submit.prevent="login" class="login">
+        <form action="#" @submit.prevent="register">
+            <div class="form-input">
+                <label for="name">Name:</label>
+                <br />
+                <input type="text" name="name" id="name" class="text-input" v-model="name" />
+            </div>
+
             <div class="form-input">
                 <label for="email">E-mail:</label>
                 <br />
@@ -26,62 +33,35 @@
             <div class="form-input">
                 <button class="submit-btn" type="submit">Submit</button>
             </div>
-
-
         </form>
     </div>
 </template>
 
 <script>
-import { AUTH_REQUEST } from "@/store/actions/auth.js";
+import axios from 'axios';
 
 export default {
-    name: "Login",
+    name: "Register",
     data() {
         return {
+            name: "",
             email: "",
             password: ""
         };
     },
     methods: {
-        login() {
-            this.$store
-                .dispatch(AUTH_REQUEST, {
-                    email: this.email,
-                    password: this.password
-                })
-                .then(() => {
-                    this.$router.push("/dash");
-                });
-        },
-        
+        register() {
+            axios.post("/auth/register", {
+                name: this.name,
+                email: this.email,
+                password: this.password
+            }).then(() => {
+                this.$router.push('/login');
+            })
+        }
     }
 };
 </script>
 
 <style>
-#login-form {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 60px;
-}
-
-input {
-    border-radius: 5px;
-    margin: 10px;
-}
-
-label {
-    align-content: flex-start;
-}
-
-/* .login {
-  flex-direction: column;
-  width: 300px;
-  padding: 10px;
-  align-content: center;
-} */
 </style>

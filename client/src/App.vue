@@ -2,6 +2,7 @@
     <div id="app">
         <!-- <h1>Welcome to the home page!</h1> -->
         <!-- <img alt="Vue logo" src="./assets/logo.png" /> -->
+        <Navigator />
         <div class="main-container">
             <router-view />
         </div>
@@ -13,13 +14,14 @@
 // import Login from "./components/auth/Login";
 // import axios from "axios";
 // import { AUTH_LOGOUT } from "./store/actions/auth";
-import { USER_REQUEST } from './store/actions/user';
+import { USER_REQUEST } from "./store/actions/user";
+
+import Navigator from "@/components/Navigator";
 
 export default {
     name: "App",
     components: {
-        // HelloWorld,
-        // Login
+        Navigator
     },
     created() {
         // axios.interceptors.response.use(undefined, err => {
@@ -53,5 +55,19 @@ export default {
     text-align: center;
     color: #2c3e50;
     margin-top: 60px;
+}
+.main-container {
+    min-height: calc(100vh - 70px);
+}
+
+body {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    color: #2e426b;
+}
+ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
 }
 </style>
