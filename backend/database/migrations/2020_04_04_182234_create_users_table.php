@@ -19,10 +19,6 @@ class CreateUsersTable extends Migration
             // Stores the encrypted user password
             $table->string('password');
 
-            // An API token assigned to user
-            // Is used in communication with front end
-            $table->string('api_token', 120)->unique()->default("");
-
             // Records the time user been created and updated
             $table->timestamps();
         });

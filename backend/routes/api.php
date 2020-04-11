@@ -8,6 +8,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
 
+// Authorization
 Route::prefix('auth')->group(function () {
 	Route::post('register', 'AuthController@register');
 	Route::post('login', 'AuthController@login');
@@ -19,12 +20,13 @@ Route::prefix('auth')->group(function () {
 });
 
 // Users
-Route::get('/users', 'UsersController@index');
-Route::middleware('auth:api')->get('/users/create', 'UsersController@create');
-Route::middleware('auth:api')->get('/users/{id}', 'UsersController@show');
-Route::middleware('auth:api')->put('/users/{id}', 'UsersController@update');
-Route::middleware('auth:api')->delete('/users/{id}', 'UsersController@delete');
-
+Route::prefix('users')->group(function (){
+	Route::get('list', 'UsersController@index');
+	Route::group(['middleware' => 'auth:api'], function (){
+		Route::put('{id}', 'UsersController@update');
+		Route::delete('{id}', 'UsersController@delete');
+	});
+});
 
 // Sockets
 Route::get('/sockets', 'SocketsController@index');
