@@ -17,6 +17,8 @@ class UsersController extends Controller
     public function update(Request $request)
     {
         Auth::user()->name = $request->name;
+        Auth::user()->updated_at = now();
+        Auth::user()->save();
         return response(Auth::user()->jsonSerialize(), Response::HTTP_OK);
     }
 
