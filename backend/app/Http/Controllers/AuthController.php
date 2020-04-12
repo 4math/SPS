@@ -13,6 +13,12 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        // JWT lives for 10 years
+        JWTAuth::factory()->setTTL(10*365*24*60);
+    }
+
     public function register(Request $request)
     {
         $v = Validator::make($request->all(), [
@@ -44,9 +50,7 @@ class AuthController extends Controller
         //Another version. Error checking with try...catch is possible
         $credentials = $request->only('email', 'password');
         try {
-            $token = JWTAuth::attempt($credentials, [
-                'exp' => Carbon::now()->addWeek()->timestamp,
-            ]);
+            $token = JWTAuth::attempt($credentials);
         } catch (JWTException $e) {
             return response()->json([
                 'error' => $e->getMessage(),
