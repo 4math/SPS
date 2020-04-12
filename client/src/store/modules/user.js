@@ -21,7 +21,7 @@ const actions = {
     [USER_REQUEST]: ({ commit, dispatch }) => {
         return new Promise((resolve, reject) => {
             commit(USER_REQUEST);
-            axios.get("/users")
+            axios.get("/users/list")
                 .then(response => {
                     commit(USER_SUCCESS, response);
                     resolve();
