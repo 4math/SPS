@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 
+// DEBUG
+Route::get('users/list', 'UsersController@index');
+Route::get('sockets/list', 'SocketsController@index');
+Route::get('data/list', 'DataController@index');
+
+
 // Authorization
 Route::prefix('auth')->group(function () {
 	Route::post('register', 'AuthController@register');
@@ -14,11 +20,10 @@ Route::prefix('auth')->group(function () {
 });
 
 // Users
-Route::prefix('users')->group(function (){
-	Route::get('list', 'UsersController@index');
+Route::prefix('user')->group(function (){
 	Route::group(['middleware' => 'auth:api'], function (){
-		Route::put('{id}', 'UsersController@update');
-		Route::delete('{id}', 'UsersController@delete');
+		Route::put('update', 'UsersController@update');
+		Route::delete('delete', 'UsersController@delete');
 	});
 });
 
