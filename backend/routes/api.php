@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Controllers\SocketsController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-	return $request->user();
-});
+// DEBUG
+Route::get('users/list', 'UsersController@index');
+Route::get('sockets/list', 'SocketsController@index');
+Route::get('data/list', 'DataController@index');
+
 
 // Authorization
 Route::prefix('auth')->group(function () {
@@ -20,11 +20,10 @@ Route::prefix('auth')->group(function () {
 });
 
 // Users
-Route::prefix('users')->group(function (){
-	Route::get('list', 'UsersController@index');
+Route::prefix('user')->group(function (){
 	Route::group(['middleware' => 'auth:api'], function (){
-		Route::put('{id}', 'UsersController@update');
-		Route::delete('{id}', 'UsersController@delete');
+		Route::put('update', 'UsersController@update');
+		Route::delete('delete', 'UsersController@delete');
 	});
 });
 

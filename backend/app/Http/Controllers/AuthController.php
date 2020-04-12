@@ -22,9 +22,8 @@ class AuthController extends Controller
         ]);
         if ($v->fails()) {
             return response()->json([
-                'status' => 'error',
                 'errors' => $v->errors()
-            ], 422);
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         $user = new User;
         $user->name = $request->name;
@@ -50,19 +49,18 @@ class AuthController extends Controller
             ]);
         } catch (JWTException $e) {
             return response()->json([
-                'error' => 'Could not authenticate',
-            ], 401);
+                'error' => $e->getMessage(),
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         if (!$token) {
             return response()->json([
                 'error' => 'Could not authenticate',
-            ], 401);
+            ], Response::HTTP_UNAUTHORIZED);
         } else {
             return response()->json([
-                'status' => 'success',
                 'token' => $token
-            ]);
+            ], Response::HTTP_OK);
         }
     }
 
@@ -70,28 +68,45 @@ class AuthController extends Controller
     {
         $this->guard()->logout();
         return response()->json([
-            'status' => 'success',
             'msg' => 'Logged out Successfully.'
         ], Response::HTTP_OK);
     }
 
-    public function user(Request $request)
+    public function user()
     {
         $user = User::find(Auth::user()->id);
         return response()->json([
-            'status' => 'success',
             'data' => $user
-        ]);
+        ], Response::HTTP_OK);
     }
 
     public function refresh()
     {
-        if ($token = $this->guard()->refresh()) {
-            return response()
-                ->json(['status' => 'successs'], 200)
-                ->header('Authorization', $token);
+        // if ($token = $this->guard()->refresh()) {
+        //     return response()
+        //         ->json(['status' => 'success'], Response::HTTP_OK)
+        //         ->header('Authorization', $token);
+        // }
+        // return response()->json(['error' => 'refresh_token_error'], 401);
+
+        try {
+            $token = $this->guard()->refresh();
+        } catch (JWTException $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
         }
-        return response()->json(['error' => 'refresh_token_error'], 401);
+
+        if ($token) {
+            return response()->json([
+                'token' => $token,
+            ], Response::HTTP_OK);
+        }
+        else {
+            return response()->json([
+                'error' => 'Could not authenticate',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
     }
 
     private function guard()
