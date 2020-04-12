@@ -11,12 +11,12 @@ class User extends Authenticatable implements JWTSubject
     use Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'api_token',
+        'name', 'email', 'password',
     ];
 
-    // protected $hidden = [
-    //     'email', 'password', 'api_token', 'remember_token',
-    // ];
+    protected $hidden = [
+        'password',
+    ];
 
     public function getJWTIdentifier()
     {
