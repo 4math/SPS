@@ -56,7 +56,7 @@ const mutations = {
     },
     [USER_SUCCESS]: (state, response) => {
         state.status = "success";
-        state.profile = response.data.data;
+        state.profile = response.data;
         console.log(response.data);
     },
     [USER_ERROR]: state => {
