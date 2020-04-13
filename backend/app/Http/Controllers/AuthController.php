@@ -13,10 +13,16 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        // JWT lives for 10 years
+        JWTAuth::factory()->setTTL(10*365*24*60);
+    }
+
     public function register(Request $request)
     {
         $v = Validator::make($request->all(), [
-            'name' => 'required|unique:users|min:3',
+            'name' => 'required|min:3',
             'email' => 'required|email|unique:users',
             'password'  => 'required|min:3',
         ]);
@@ -30,7 +36,7 @@ class AuthController extends Controller
         $user->email = $request->email;
         $user->password = bcrypt($request->password);
         $user->save();
-        return response()->json(['status' => 'success'], Response::HTTP_OK);
+        return response(null, Response::HTTP_OK);
     }
 
     public function login(Request $request)
@@ -44,9 +50,7 @@ class AuthController extends Controller
         //Another version. Error checking with try...catch is possible
         $credentials = $request->only('email', 'password');
         try {
-            $token = JWTAuth::attempt($credentials, [
-                'exp' => Carbon::now()->addWeek()->timestamp,
-            ]);
+            $token = JWTAuth::attempt($credentials);
         } catch (JWTException $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -74,10 +78,8 @@ class AuthController extends Controller
 
     public function user()
     {
-        $user = User::find(Auth::user()->id);
-        return response()->json([
-            'data' => $user
-        ], Response::HTTP_OK);
+        $user = User::find(Auth::id());
+        return response($user->jsonSerialize(), Response::HTTP_OK);
     }
 
     public function refresh()
