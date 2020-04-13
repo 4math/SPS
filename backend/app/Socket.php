@@ -31,7 +31,7 @@ class Socket extends Model
         'name', 'description', 'user_id',
     ];
 
-    protected $hiden = [
+    protected $hidden = [
         'user_id',
     ];
 
