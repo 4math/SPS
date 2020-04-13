@@ -38,7 +38,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 
 export default {
     name: "Register",
@@ -51,7 +50,7 @@ export default {
     },
     methods: {
         register() {
-            axios.post("/auth/register", {
+            this.$axios.post("/auth/register", {
                 name: this.name,
                 email: this.email,
                 password: this.password

@@ -17,6 +17,7 @@ Vue.use(IconsPlugin);
 Vue.use(Router);
 
 axios.defaults.baseURL = 'http://localhost:8000/api';
+Vue.prototype.$axios = axios;
 
 new Vue({
   render: h => h(App),
