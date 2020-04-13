@@ -1,7 +1,5 @@
 <template>
     <div id="app">
-        <!-- <h1>Welcome to the home page!</h1> -->
-        <!-- <img alt="Vue logo" src="./assets/logo.png" /> -->
         <Navigator />
         <div class="main-container">
             <router-view />
@@ -10,9 +8,6 @@
 </template>
 
 <script>
-// import HelloWorld from "./components/HelloWorld.vue";
-// import Login from "./components/auth/Login";
-// import axios from "axios";
 // import { AUTH_LOGOUT } from "./store/actions/auth";
 import { USER_REQUEST } from "./store/actions/user";
 
@@ -54,20 +49,12 @@ export default {
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: #2c3e50;
-    margin-top: 60px;
-}
-.main-container {
-    min-height: calc(100vh - 70px);
+    margin-top: 0 !important;
 }
 
 body {
     margin: 0;
-    font-family: "Roboto", sans-serif;
-    color: #2e426b;
 }
-ul {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
+
+
 </style>

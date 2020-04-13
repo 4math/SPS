@@ -27,14 +27,13 @@ const actions = {
 
         return new Promise((resolve, reject) => {
             commit(AUTH_REQUEST);
-            console.log(user);
             axios.post('/auth/login', user)
                 .then(response => {
                     const token = response.data.token;
-                    console.log(response);
                     // store the token in localstorage
                     localStorage.setItem('user-token', token);
                     axios.defaults.headers.common['Authorization'] = "Bearer " + token;
+                    
                     commit(AUTH_SUCCESS, response);
                     // you have your token, now log in your user :)
                     dispatch(USER_REQUEST);
