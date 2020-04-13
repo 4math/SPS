@@ -1,34 +1,44 @@
 <template>
     <div id="login-form">
-        <h1>
+        <h1 id="title">
             <b>Welcome to the Login Page!</b>
         </h1>
 
-        <form action="#" @submit.prevent="login" class="login">
+        <b-form @submit.prevent="login" class="login">
             <div class="form-input">
                 <label for="email">E-mail:</label>
-                <br />
-                <input type="email" name="email" id="email" class="text-input" v-model="email" />
+                <b-input
+                    type="email"
+                    name="email"
+                    id="email"
+                    class="text-input"
+                    v-model="email"
+                    placeholder="example@example.net"
+                ></b-input>
             </div>
 
             <div class="form-input">
                 <label for="password">Password:</label>
-                <br />
-                <input
+                <b-input
                     type="password"
                     name="password"
                     id="password"
                     class="text-input"
                     v-model="password"
-                />
+                ></b-input>
             </div>
 
             <div class="form-input">
-                <button class="submit-btn" type="submit">Submit</button>
+                <b-alert
+                    v-model="error"
+                    variant="danger"
+                >{{ errMsg }}</b-alert>
             </div>
 
-
-        </form>
+            <div class="form-input">
+                <b-button class="submit-btn" type="submit">Submit</b-button>
+            </div>
+        </b-form>
     </div>
 </template>
 
@@ -40,7 +50,9 @@ export default {
     data() {
         return {
             email: "",
-            password: ""
+            password: "",
+            error: false,
+            errMsg: ""
         };
     },
     methods: {
@@ -52,36 +64,18 @@ export default {
                 })
                 .then(() => {
                     this.$router.push("/dash");
+                })
+                .catch(err => {
+                    this.error = true;
+                    // let errArray = Object.values(err.response.data.error);
+                    // this.errors = Array.prototype.concat(...errArray);
+                    this.errMsg = err.response.data.error;
                 });
-        },
-        
-    }
+        }
+    },
 };
 </script>
 
-<style>
-#login-form {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 60px;
-}
-
-input {
-    border-radius: 5px;
-    margin: 10px;
-}
-
-label {
-    align-content: flex-start;
-}
-
-/* .login {
-  flex-direction: column;
-  width: 300px;
-  padding: 10px;
-  align-content: center;
-} */
+<style scoped>
+@import "./../../assets/styles/form.css";
 </style>

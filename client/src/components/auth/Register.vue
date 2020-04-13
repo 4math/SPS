@@ -5,62 +5,106 @@
             <b>Welcome to the Register Page!</b>
         </h1>
 
-        <form action="#" @submit.prevent="register">
+        <b-form action="#" @submit.prevent="register">
             <div class="form-input">
-                <label for="name">Name:</label>
-                <br />
-                <input type="text" name="name" id="name" class="text-input" v-model="name" />
+                <label for="username">Username:</label>
+                <b-input
+                    type="text"
+                    name="username"
+                    id="username"
+                    class="text-input"
+                    v-model="name"
+                    :state="validation"
+                    placeholder="George"
+                ></b-input>
+                <b-form-invalid-feedback
+                    class="form-feedback"
+                    :state="validation"
+                >Your username should be at least 3 characters long.</b-form-invalid-feedback>
+                <b-form-valid-feedback class="form-feedback" :state="validation">Looks Good.</b-form-valid-feedback>
             </div>
 
             <div class="form-input">
                 <label for="email">E-mail:</label>
-                <br />
-                <input type="email" name="email" id="email" class="text-input" v-model="email" />
+                <b-input
+                    type="email"
+                    name="email"
+                    id="email"
+                    class="text-input"
+                    v-model="email"
+                    placeholder="example@example.net"
+                ></b-input>
             </div>
 
             <div class="form-input">
                 <label for="password">Password:</label>
-                <br />
-                <input
+                <b-input
                     type="password"
                     name="password"
                     id="password"
                     class="text-input"
                     v-model="password"
-                />
+                ></b-input>
+                <b-form-text id="password-help-block">
+                    Your password must be 6-20 characters long, contain letters and numbers, and must not
+                    contain spaces, special characters, or emoji.
+                </b-form-text>
             </div>
 
             <div class="form-input">
-                <button class="submit-btn" type="submit">Submit</button>
+                <b-alert
+                    v-for="err in errors"
+                    :key="err"
+                    variant="danger"
+                    v-model="error"
+                >{{ err }}</b-alert>
             </div>
-        </form>
+
+            <div class="form-input">
+                <b-button class="submit-btn" type="submit">Submit</b-button>
+            </div>
+        </b-form>
     </div>
 </template>
 
 <script>
-
 export default {
     name: "Register",
     data() {
         return {
             name: "",
             email: "",
-            password: ""
+            password: "",
+            error: false,
+            errors: []
         };
     },
     methods: {
         register() {
-            this.$axios.post("/auth/register", {
-                name: this.name,
-                email: this.email,
-                password: this.password
-            }).then(() => {
-                this.$router.push('/login');
-            })
+            this.$axios
+                .post("/auth/register", {
+                    name: this.name,
+                    email: this.email,
+                    password: this.password
+                })
+                .then(() => {
+                    this.$router.push("/login");
+                })
+                .catch(err => {
+                    this.error = true;
+                    let errArray = Object.values(err.response.data.errors);
+                    this.errors = Array.prototype.concat(...errArray);
+                });
+        }
+    },
+    computed: {
+        validation() {
+            return this.name.length >= 3;
         }
     }
 };
 </script>
 
-<style>
+<style scoped>
+@import "./../../assets/styles/form.css";
 </style>
