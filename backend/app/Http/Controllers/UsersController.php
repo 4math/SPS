@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
-    public function index()
+    public function indexD()
     {
         return response(User::all()->jsonSerialize(), Response::HTTP_OK);
     }
@@ -24,7 +24,7 @@ class UsersController extends Controller
 
     public function delete()
     {
-        User::destroy(Auth::user()->id);
+        User::destroy(Auth::id());
         return response(null, Response::HTTP_OK);
     }
 }

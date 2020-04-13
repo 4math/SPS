@@ -22,7 +22,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $v = Validator::make($request->all(), [
-            'name' => 'required|unique:users|min:3',
+            'name' => 'required|min:3',
             'email' => 'required|email|unique:users',
             'password'  => 'required|min:3',
         ]);
@@ -36,7 +36,7 @@ class AuthController extends Controller
         $user->email = $request->email;
         $user->password = bcrypt($request->password);
         $user->save();
-        return response()->json(['status' => 'success'], Response::HTTP_OK);
+        return response(null, Response::HTTP_OK);
     }
 
     public function login(Request $request)
@@ -78,10 +78,8 @@ class AuthController extends Controller
 
     public function user()
     {
-        $user = User::find(Auth::user()->id);
-        return response()->json([
-            'data' => $user
-        ], Response::HTTP_OK);
+        $user = User::find(Auth::id());
+        return response($user->jsonSerialize(), Response::HTTP_OK);
     }
 
     public function refresh()
