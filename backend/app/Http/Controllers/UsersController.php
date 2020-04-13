@@ -5,56 +5,26 @@ namespace App\Http\Controllers;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Faker\Generator as Faker;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
-    public function index()
+    public function indexD()
     {
         return response(User::all()->jsonSerialize(), Response::HTTP_OK);
     }
 
-    public function show($id)
+    public function update(Request $request)
     {
-        if ($user = User::find($id)) {
-            return response($user->jsonSerialize(), Response::HTTP_FOUND);
-        } else {
-            return response(null, Response::HTTP_NO_CONTENT);
-        }
+        Auth::user()->name = $request->name;
+        Auth::user()->updated_at = now();
+        Auth::user()->save();
+        return response(Auth::user()->jsonSerialize(), Response::HTTP_OK);
     }
 
-    public function create(Faker $faker, Request $request)
+    public function delete()
     {
-        $user = new User([
-            'name' => $faker->firstName(),
-            'email' => $faker->unique()->safeEmail,
-            'password' => $faker->password(),
-            'api_token' => $faker->unique()->asciify(Str::random(64)),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        $user->save();
-
-        return response($user->jsonSerialize(), Response::HTTP_CREATED);
-    }
-
-    public function update(Request $request, $id)
-    {
-        if ($user = User::find($id)) {
-            $user->name = $request->name;
-            $user->save();
-            return response($user->jsonSerialize(), Response::HTTP_OK);
-        } else {
-            return response('Not found', Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    public function delete($id)
-    {
-        if (User::destroy($id))
-            return response(null, Response::HTTP_OK);
-        else
-            return response('Not found', Response::HTTP_BAD_REQUEST);
+        User::destroy(Auth::id());
+        return response(null, Response::HTTP_OK);
     }
 }

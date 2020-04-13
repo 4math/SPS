@@ -9,7 +9,7 @@ use Faker\Generator as Faker;
 
 class DataController extends Controller
 {
-    public function index()
+    public function indexD()
     {
         return response(Data::all()->jsonSerialize(), Response::HTTP_OK);
     }

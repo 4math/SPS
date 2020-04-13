@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\SocketsController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-	return $request->user();
-});
+// DEBUG
+Route::get('users/listD', 'UsersController@indexD');
+Route::get('sockets/listD', 'SocketsController@indexD');
+Route::get('data/listD', 'DataController@indexD');
+
 
 // Authorization
 Route::prefix('auth')->group(function () {
@@ -20,24 +21,19 @@ Route::prefix('auth')->group(function () {
 });
 
 // Users
-Route::prefix('users')->group(function (){
-	Route::get('list', 'UsersController@index');
+Route::prefix('user')->group(function (){
 	Route::group(['middleware' => 'auth:api'], function (){
-		Route::put('{id}', 'UsersController@update');
-		Route::delete('{id}', 'UsersController@delete');
+		Route::put('update', 'UsersController@update');
+		Route::delete('', 'UsersController@delete');
 	});
 });
 
 // Sockets
-Route::get('/sockets', 'SocketsController@index');
-Route::get('/sockets/create', 'SocketsController@create');
-Route::get('/sockets/{id}', 'SocketsController@show');
-Route::put('/sockets/{id}', 'SocketsController@update');
-Route::delete('/sockets/{id}', 'SocketsController@delete');
-
-// Data
-Route::get('/data', 'DataController@index');
-Route::get('/data/create', 'DataController@create');
-Route::get('/data/{id}', 'DataController@show');
-Route::put('/data/{id}', 'DataController@update');
-Route::delete('/data/{id}', 'DataController@delete');
+Route::prefix('sockets')->group(function (){
+	Route::group(['middleware' => 'auth:api'], function (){
+		Route::post('add', 'SocketsController@add');
+		Route::get('list', 'SocketsController@list');
+		Route::get('show/{id}', 'SocketsController@show');
+		Route::delete('{id}', 'SocketsController@delete');
+	});
+});

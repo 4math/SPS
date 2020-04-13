@@ -28,7 +28,7 @@ const actions = {
                 dispatch(AUTH_LOGOUT);
                 return;
             }
-            
+
             axios.defaults.headers.common['Authorization'] = "Bearer " + token;
             commit(USER_REQUEST);
             axios.get("/auth/user")

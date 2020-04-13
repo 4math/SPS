@@ -16,12 +16,12 @@ class CreateSocketsTable extends Migration
         Schema::create('sockets', function (Blueprint $table) {
             $table->id();
 
-            $table->bigInteger('user_id')->unsigned()->default(0);
+            $table->bigInteger('user_id')->unsigned();
             // TODO: change deleting method, cascade delete not working after Laravel 5
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->string('name');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->boolean('switch_state')->default(false);
         });
     }

@@ -13,25 +13,30 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        // JWT lives for 10 years
+        JWTAuth::factory()->setTTL(10*365*24*60);
+    }
+
     public function register(Request $request)
     {
         $v = Validator::make($request->all(), [
-            'name' => 'required|unique:users|min:3',
+            'name' => 'required|min:3',
             'email' => 'required|email|unique:users',
             'password'  => 'required|min:3',
         ]);
         if ($v->fails()) {
             return response()->json([
-                'status' => 'error',
                 'errors' => $v->errors()
-            ], 422);
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         $user = new User;
         $user->name = $request->name;
         $user->email = $request->email;
         $user->password = bcrypt($request->password);
         $user->save();
-        return response()->json(['status' => 'success'], Response::HTTP_OK);
+        return response(null, Response::HTTP_OK);
     }
 
     public function login(Request $request)
@@ -45,24 +50,21 @@ class AuthController extends Controller
         //Another version. Error checking with try...catch is possible
         $credentials = $request->only('email', 'password');
         try {
-            $token = JWTAuth::attempt($credentials, [
-                'exp' => Carbon::now()->addWeek()->timestamp,
-            ]);
+            $token = JWTAuth::attempt($credentials);
         } catch (JWTException $e) {
             return response()->json([
-                'error' => 'Could not authenticate',
-            ], 401);
+                'error' => $e->getMessage(),
+            ], Response::HTTP_UNAUTHORIZED);
         }
 
         if (!$token) {
             return response()->json([
                 'error' => 'Could not authenticate',
-            ], 401);
+            ], Response::HTTP_UNAUTHORIZED);
         } else {
             return response()->json([
-                'status' => 'success',
                 'token' => $token
-            ]);
+            ], Response::HTTP_OK);
         }
     }
 
@@ -70,28 +72,43 @@ class AuthController extends Controller
     {
         $this->guard()->logout();
         return response()->json([
-            'status' => 'success',
             'msg' => 'Logged out Successfully.'
         ], Response::HTTP_OK);
     }
 
-    public function user(Request $request)
+    public function user()
     {
-        $user = User::find(Auth::user()->id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $user
-        ]);
+        $user = User::find(Auth::id());
+        return response($user->jsonSerialize(), Response::HTTP_OK);
     }
 
     public function refresh()
     {
-        if ($token = $this->guard()->refresh()) {
-            return response()
-                ->json(['status' => 'successs'], 200)
-                ->header('Authorization', $token);
+        // if ($token = $this->guard()->refresh()) {
+        //     return response()
+        //         ->json(['status' => 'success'], Response::HTTP_OK)
+        //         ->header('Authorization', $token);
+        // }
+        // return response()->json(['error' => 'refresh_token_error'], 401);
+
+        try {
+            $token = $this->guard()->refresh();
+        } catch (JWTException $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
         }
-        return response()->json(['error' => 'refresh_token_error'], 401);
+
+        if ($token) {
+            return response()->json([
+                'token' => $token,
+            ], Response::HTTP_OK);
+        }
+        else {
+            return response()->json([
+                'error' => 'Could not authenticate',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
     }
 
     private function guard()
