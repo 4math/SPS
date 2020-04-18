@@ -1,7 +1,7 @@
 
 <template>
     <div class="navigation">
-        <b-navbar toggleable="md" type="dark" variant="info">
+        <b-navbar toggleable="md" type="dark" variant="dark">
             <b-navbar-brand>
                 <router-link class="nav-link" to="/">
                     <img src="@/assets/logo.png" width="40px" />
@@ -36,7 +36,7 @@
                         </router-link>
                     </b-nav-item>
 
-                    <b-nav-item v-if="isAuthenticated && !authLoading" @click="logout">
+                    <b-nav-item v-if="isAuthenticated || authLoading" @click="logout">
                         <span class="nav-link">
                             <strong>Logout</strong>
                         </span>

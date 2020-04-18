@@ -1,6 +1,8 @@
 <template>
     <div id="app">
         <Navigator />
+        <Loading :active.sync="isLoading"  />
+        <!-- <Loading :isLoading=true /> -->
         <div class="main-container">
             <router-view />
         </div>
@@ -8,36 +10,23 @@
 </template>
 
 <script>
-// import { AUTH_LOGOUT } from "./store/actions/auth";
-import { USER_REQUEST } from "./store/actions/user";
-
 import Navigator from "@/components/Navigator";
+import { mapGetters } from "vuex";
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/vue-loading.css";
 
 export default {
     name: "App",
     components: {
-        Navigator
+        Navigator,
+        Loading
     },
-    created() {
-        // axios.interceptors.response.use(undefined, err => {
-        //     return new Promise((resolve, reject) => {
-        //         if (
-        //             err.status === 401 &&
-        //             err.config &&
-        //             !err.config.__isRetryRequest
-        //         ) {
-        //             // if you ever get an unauthorized, logout the user
-        //             this.$store.dispatch(AUTH_LOGOUT);
-        //             // you can also redirect to /login if needed !
-        //             resolve();
-        //         }
-        //         reject();
-        //         throw err;
-        //     });
-        // });
-        if (this.$store.getters.isAuthenticated) {
-            this.$store.dispatch(USER_REQUEST);
-        }
+    data() {
+        return {};
+    },
+    created() {},
+    computed: {
+        ...mapGetters(["isLoading"])
     }
 };
 </script>
@@ -55,6 +44,4 @@ export default {
 body {
     margin: 0;
 }
-
-
 </style>

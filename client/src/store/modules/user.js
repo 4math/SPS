@@ -20,16 +20,8 @@ const actions = {
 
     [USER_REQUEST]: ({ commit, dispatch }) => {
 
+
         return new Promise((resolve, reject) => {
-
-            const token = localStorage.getItem('user-token');
-            if (!token) {
-                commit(USER_ERROR);
-                dispatch(AUTH_LOGOUT);
-                return;
-            }
-
-            axios.defaults.headers.common['Authorization'] = "Bearer " + token;
             commit(USER_REQUEST);
             axios.get("/auth/user")
                 .then(response => {
@@ -57,7 +49,6 @@ const mutations = {
     [USER_SUCCESS]: (state, response) => {
         state.status = "success";
         state.profile = response.data;
-        console.log(response.data);
     },
     [USER_ERROR]: state => {
         state.status = "error";

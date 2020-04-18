@@ -7,8 +7,6 @@ import {
     AUTH_LOGOUT
 } from "../actions/auth";
 
-import { USER_REQUEST } from './../actions/user';
-// import qs from 'qs';
 
 
 const state = {
@@ -23,7 +21,7 @@ const getters = {
 
 const actions = {
 
-    [AUTH_REQUEST]: ({ commit, dispatch }, user) => {
+    [AUTH_REQUEST]: ({ commit }, user) => {
 
         return new Promise((resolve, reject) => {
             commit(AUTH_REQUEST);
@@ -32,11 +30,7 @@ const actions = {
                     const token = response.data.token;
                     // store the token in localstorage
                     localStorage.setItem('user-token', token);
-                    axios.defaults.headers.common['Authorization'] = "Bearer " + token;
-                    
                     commit(AUTH_SUCCESS, response);
-                    // you have your token, now log in your user :)
-                    dispatch(USER_REQUEST);
                     resolve(response);
                 })
                 .catch(err => {
