@@ -13,13 +13,11 @@ const getters = {
 
 const mutations = {
     [START_LOADING]: state => {
-        // console.log("Started loading ", state.isLoading, state.refCount);
         state.isLoading = true;
         state.refCount++;
     },
 
     [FINISH_LOADING]: state => {
-        // console.log("Ended loading ", state.isLoading, state.refCount);
         state.refCount--;
         state.isLoading = (state.refCount > 0);
     }
