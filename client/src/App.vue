@@ -1,33 +1,30 @@
 <template>
     <div id="app">
         <Navigator />
-        <p style="color: red" v-if="isLoading">Loading</p>
+        <Loading :active.sync="isLoading"  />
+        <!-- <Loading :isLoading=true /> -->
         <div class="main-container">
             <router-view />
         </div>
-        
     </div>
 </template>
 
 <script>
-import { USER_REQUEST } from "./store/actions/user";
-
 import Navigator from "@/components/Navigator";
 import { mapGetters } from "vuex";
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/vue-loading.css";
 
 export default {
     name: "App",
     components: {
-        Navigator
+        Navigator,
+        Loading
     },
     data() {
         return {};
     },
-    created() {
-        if (this.$store.getters.isAuthenticated) {
-            this.$store.dispatch(USER_REQUEST);
-        }
-    },
+    created() {},
     computed: {
         ...mapGetters(["isLoading"])
     }

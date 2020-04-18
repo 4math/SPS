@@ -5,20 +5,25 @@
 </template>
 
 <script>
-
 import { mapGetters } from "vuex";
+import { USER_REQUEST } from "@/store/actions/user";
+import store from "@/store";
 
 export default {
     name: "Dashboard",
     data() {
-        return {
-
-        }
+        return {};
     },
-    methods: {
-    },
+    methods: {},
     computed: {
-        ...mapGetters(["getProfile"]),
+        ...mapGetters(["getProfile"])
+    },
+    beforeRouteEnter(to, from, next) {
+        if (store.getters.isAuthenticated) {
+            store.dispatch(USER_REQUEST).then(() => {
+                next();
+            });
+        }
     }
 };
 </script>

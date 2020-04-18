@@ -7,9 +7,9 @@ import authInterceptor from './services/interceptors/auth';
 import Router from 'vue-router';
 import axios from "axios";
 import VueAxios from 'vue-axios';
-import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
-import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
+import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 
 Vue.config.productionTip = false;
