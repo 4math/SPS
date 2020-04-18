@@ -81,7 +81,7 @@ export default {
     },
     methods: {
         register() {
-            this.$axios
+            this.axios
                 .post("/auth/register", {
                     name: this.name,
                     email: this.email,

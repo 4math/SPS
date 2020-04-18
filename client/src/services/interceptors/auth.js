@@ -20,7 +20,6 @@ export default function setup(http) {
             return response;
         },
         err => {
-            console.log("not ok");
             if (err.status === 401) {
                 // if you ever get an unauthorized, logout the user
                 store.dispatch(AUTH_LOGOUT);
