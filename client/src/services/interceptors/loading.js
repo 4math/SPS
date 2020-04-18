@@ -1,7 +1,6 @@
 import store from '@/store';
 import { START_LOADING, FINISH_LOADING } from "@/store/actions/loading";
 
-
 export default function setup(http) {
     
     http.interceptors.request.use(config => {
@@ -10,7 +9,7 @@ export default function setup(http) {
 
     }, error => {
         store.commit(FINISH_LOADING);
-        return new Promise.reject(error);
+        return Promise.reject(error);
     });
 
 
@@ -20,7 +19,7 @@ export default function setup(http) {
 
     }, error => {
         store.commit(FINISH_LOADING);
-        return new Promise.reject(error);
+        return Promise.reject(error);
     });
 }
 

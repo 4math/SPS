@@ -20,8 +20,9 @@ const actions = {
 
     [USER_REQUEST]: ({ commit, dispatch }) => {
 
+
         return new Promise((resolve, reject) => {
-         
+            commit(USER_REQUEST);
             axios.get("/auth/user")
                 .then(response => {
 
@@ -48,7 +49,6 @@ const mutations = {
     [USER_SUCCESS]: (state, response) => {
         state.status = "success";
         state.profile = response.data;
-        console.log(response.data);
     },
     [USER_ERROR]: state => {
         state.status = "error";

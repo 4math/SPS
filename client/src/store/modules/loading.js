@@ -20,8 +20,8 @@ const mutations = {
 
     [FINISH_LOADING]: state => {
         // console.log("Ended loading ", state.isLoading, state.refCount);
-        state.isLoading = false;
         state.refCount--;
+        state.isLoading = (state.refCount > 0);
     }
 };
 
