@@ -1,43 +1,35 @@
 <template>
     <div id="app">
         <Navigator />
+        <p style="color: red" v-if="isLoading">Loading</p>
         <div class="main-container">
             <router-view />
         </div>
+        
     </div>
 </template>
 
 <script>
-// import { AUTH_LOGOUT } from "./store/actions/auth";
 import { USER_REQUEST } from "./store/actions/user";
 
 import Navigator from "@/components/Navigator";
+import { mapGetters } from "vuex";
 
 export default {
     name: "App",
     components: {
         Navigator
     },
+    data() {
+        return {};
+    },
     created() {
-        // axios.interceptors.response.use(undefined, err => {
-        //     return new Promise((resolve, reject) => {
-        //         if (
-        //             err.status === 401 &&
-        //             err.config &&
-        //             !err.config.__isRetryRequest
-        //         ) {
-        //             // if you ever get an unauthorized, logout the user
-        //             this.$store.dispatch(AUTH_LOGOUT);
-        //             // you can also redirect to /login if needed !
-        //             resolve();
-        //         }
-        //         reject();
-        //         throw err;
-        //     });
-        // });
         if (this.$store.getters.isAuthenticated) {
             this.$store.dispatch(USER_REQUEST);
         }
+    },
+    computed: {
+        ...mapGetters(["isLoading"])
     }
 };
 </script>
@@ -55,6 +47,4 @@ export default {
 body {
     margin: 0;
 }
-
-
 </style>
