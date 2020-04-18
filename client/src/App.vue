@@ -1,12 +1,12 @@
 <template>
-    <div id="app">
-        <Navigator />
-        <Loading :active.sync="isLoading"  />
-        <!-- <Loading :isLoading=true /> -->
-        <div class="main-container">
-            <router-view />
-        </div>
+  <div id="app">
+    <Navigator />
+    <Loading :active.sync="isLoading" />
+    <!-- <Loading :isLoading=true /> -->
+    <div class="main-container">
+      <router-view />
     </div>
+  </div>
 </template>
 
 <script>
@@ -24,10 +24,10 @@ export default {
     data() {
         return {};
     },
-    created() {},
     computed: {
         ...mapGetters(["isLoading"])
-    }
+    },
+    created() {}
 };
 </script>
 

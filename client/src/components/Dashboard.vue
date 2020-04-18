@@ -1,7 +1,7 @@
 <template>
-    <div id="app">
-        <h1>Welcome to the dashboard, {{ getProfile.name }}!</h1>
-    </div>
+  <div id="app">
+    <h1>Welcome to the dashboard, {{ getProfile.name }}!</h1>
+  </div>
 </template>
 
 <script>
@@ -14,10 +14,10 @@ export default {
     data() {
         return {};
     },
-    methods: {},
     computed: {
         ...mapGetters(["getProfile"])
     },
+    methods: {},
     beforeRouteEnter(to, from, next) {
         if (store.getters.isAuthenticated) {
             store.dispatch(USER_REQUEST).then(() => {
