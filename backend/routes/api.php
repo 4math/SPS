@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\SocketsController;
 use Illuminate\Support\Facades\Route;
 
 // DEBUG
@@ -35,5 +34,13 @@ Route::prefix('sockets')->group(function (){
 		Route::get('list', 'SocketsController@list');
 		Route::get('show/{id}', 'SocketsController@show');
 		Route::delete('{id}', 'SocketsController@delete');
+	});
+});
+
+// Data
+Route::prefix('data')->group(function (){
+	Route::group(['middleware' => 'auth:api'], function (){
+		Route::get('list/{socket_id}', 'DataController@list');
+		Route::delete('{id}', 'DataController@delete');
 	});
 });

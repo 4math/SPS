@@ -46,7 +46,7 @@ class SocketsController extends Controller
         if($socket != '[]'){
             return response($socket->jsonSerialize(), Response::HTTP_OK);
         } else {
-            return response(null, Response::HTTP_NO_CONTENT);
+            return response($socket->jsonSerialize(), Response::HTTP_NO_CONTENT);
         }
     }
 
