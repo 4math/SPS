@@ -1,5 +1,5 @@
-import Vue from 'vue'
-import App from './App.vue'
+import Vue from 'vue';
+import App from './App.vue';
 import router from './router/router';
 import store from './store';
 import loadingInterceptor from './services/interceptors/loading';
@@ -14,7 +14,8 @@ import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 Vue.config.productionTip = false;
 
-axios.defaults.baseURL = 'http://localhost:8000/api';
+// eslint-disable-next-line no-undef
+axios.defaults.baseURL = process.env.VUE_APP_BASE_URL;
 
 Vue.use(BootstrapVue);
 
