@@ -8,6 +8,7 @@
 import { mapGetters } from "vuex";
 import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
+import router from "@/router/router";
 
 export default {
     name: "Dashboard",
@@ -20,9 +21,14 @@ export default {
     methods: {},
     beforeRouteEnter(to, from, next) {
         if (store.getters.isAuthenticated) {
-            store.dispatch(USER_REQUEST).then(() => {
-                next();
-            });
+            store
+                .dispatch(USER_REQUEST)
+                .then(() => {
+                    next();
+                })
+                .catch(() => {
+                    router.push("/login").catch(console.error);
+                });
         }
     }
 };
