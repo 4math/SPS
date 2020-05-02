@@ -13,7 +13,7 @@ Route::prefix('auth')->group(function () {
 	Route::post('register', 'AuthController@register');
 	Route::post('login', 'AuthController@login');
 	Route::get('refresh', 'AuthController@refresh');
-	Route::group(['middleware' => 'auth:api'], function () {
+	Route::group(['middleware' => ['auth:api', 'jwt.auth', 'jwt.refresh', 'cors']], function () {
 		Route::get('user', 'AuthController@user');
 		Route::get('logout', 'AuthController@logout');
 	});
