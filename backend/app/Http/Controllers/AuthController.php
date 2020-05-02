@@ -13,18 +13,13 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
-    public function __construct()
-    {
-        // JWT lives for 10 years
-        JWTAuth::factory()->setTTL(10*365*24*60);
-    }
 
     public function register(Request $request)
     {
         $v = Validator::make($request->all(), [
             'name' => 'required|min:3',
             'email' => 'required|email|unique:users',
-            'password'  => 'required|min:3',
+            'password'  => 'required|min:6',
         ]);
         if ($v->fails()) {
             return response()->json([
