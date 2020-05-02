@@ -5,6 +5,11 @@
 npm install
 ```
 
+## Copy environmental variables
+```
+cp .env.example .env
+```
+
 ### Compiles and hot-reloads for development
 ```
 npm run serve
