@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 use Illuminate\Http\Response;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 class Authenticate extends Middleware
 {
@@ -30,17 +29,4 @@ class Authenticate extends Middleware
         return 'authentication_error';
     }
 
-
-    protected function tryRefresh($request)
-    {
-        try {
-            $token = JWTAuth::refresh($request->header('Authorization'));
-            return $token;
-        } catch (JWTException $e) {
-            // token expired? force logout on frontend
-            throw new AuthenticationException();
-        }
-
-        return null;
-    }
 }
