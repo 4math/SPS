@@ -1,4 +1,3 @@
-
 <template>
   <div id="register-form">
     <h1>
@@ -56,8 +55,8 @@
           class="text-input"
         />
         <b-form-text id="password-help-block">
-          Your password must be 6-20 characters long, contain letters and numbers, and must not
-          contain spaces, special characters, or emoji.
+          Your password must be 6-20 characters long, contain letters and
+          numbers, and must not contain spaces, special characters, or emoji.
         </b-form-text>
       </div>
 
@@ -86,39 +85,40 @@
 
 <script>
 export default {
-    name: "Register",
-    data() {
-        return {
-            name: "",
-            email: "",
-            password: "",
-            error: false,
-            errors: []
-        };
+  name: "Register",
+  data() {
+    return {
+      name: "",
+      email: "",
+      password: "",
+      error: false,
+      errors: [],
+    };
+  },
+  computed: {
+    validation() {
+      return this.name.length >= 3;
     },
-    computed: {
-        validation() {
-            return this.name.length >= 3;
-        }
+  },
+  methods: {
+    register() {
+      this.axios
+        .post("/auth/register", {
+          name: this.name,
+          email: this.email,
+          password: this.password,
+        })
+        .then(() => {
+          this.$router.push("/login");
+        })
+        .catch((err) => {
+          this.error = true;
+          let errArray = Object.values(err.response.data.errors);
+          this.errors = Array.prototype.concat(...errArray);
+        });
     },
-    methods: {
-        register() {
-            this.axios
-                .post("/auth/register", {
-                    name: this.name,
-                    email: this.email,
-                    password: this.password
-                })
-                .then(() => {
-                    this.$router.push("/login");
-                })
-                .catch(err => {
-                    this.error = true;
-                    let errArray = Object.values(err.response.data.errors);
-                    this.errors = Array.prototype.concat(...errArray);
-                });
-        }
-    }
+  },
+  
 };
 </script>
 
