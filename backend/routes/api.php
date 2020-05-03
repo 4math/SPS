@@ -33,6 +33,7 @@ Route::prefix('sockets')->group(function (){
 		Route::post('add', 'SocketsController@add');
 		Route::get('list', 'SocketsController@list');
 		Route::get('show/{id}', 'SocketsController@show');
+		Route::put('{id}', 'SocketsController@put');
 		Route::delete('{id}', 'SocketsController@delete');
 	});
 });

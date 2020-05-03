@@ -29,6 +29,7 @@ class SocketsController extends Controller
         $socket->user_id = Auth::id();
         $socket->name = $request->name;
         $socket->description = $request->description;
+        $socket->switch_state = $request->state;
         $socket->save();
         return response($socket->jsonSerialize(), Response::HTTP_OK);
     }
@@ -47,6 +48,20 @@ class SocketsController extends Controller
             return response($socket->jsonSerialize(), Response::HTTP_OK);
         } else {
             return response($socket->jsonSerialize(), Response::HTTP_NO_CONTENT);
+        }
+    }
+
+    public function put(Request $request)
+    {
+        $socket = Socket::all()->where('user_id', Auth::id())->where('id', $request->id)->first();
+        // Did not understand how to check whether the first element is empty...
+        if($socket){
+            $socket->switch_state = $request->state;
+            $socket->save();
+            return response($socket->jsonSerialize(), Response::HTTP_OK);
+        } else {
+            // Does not work
+            return response()->json(['error' => "Socket with such id does not exist"], Response::HTTP_NO_CONTENT);
         }
     }
 
