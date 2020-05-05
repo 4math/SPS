@@ -8,6 +8,7 @@ npm install
 ## Copy environmental variables
 ```
 cp .env.example .env
+cp .env.prod.example .env.prod
 ```
 
 ### Compiles and hot-reloads for development
