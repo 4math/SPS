@@ -14,6 +14,7 @@
       </b-card-text>
 
       <b-input-group id="switch" size="lg">
+        <label for="switch">Turn {{ state ? "off" : "on" }}</label>
         <b-input-group-prepend is-text>
           <b-form-checkbox
             switch
@@ -52,17 +53,27 @@ export default {
       default: false,
     },
   },
+  data() {
+    return {
+      img: "",
+    };
+  },
   computed: {
     image() {
-      const image = this.state ? "bulb_on" : "bulb";
+      const ext = this.state ? "_on" : "_off";
       // eslint-disable-next-line no-undef
-      return require(`@/assets/images/${image}.jpg`);
+      return require(`@/assets/images/socket${ext}.jpg`);
+    },
+  },
+  watch: {
+    img() {
+      this.image();
     },
   },
   methods: {
     put(value) {
       this.$emit("put", this.id, value);
-    }
+    },
   },
 };
 </script>
@@ -76,5 +87,21 @@ export default {
 #switch {
   margin: 0 auto;
   display: inline;
+}
+
+.input-group-prepend {
+  display: inline-block !important;
+  margin: 0 auto;
+  width: 25%;
+  height: 25%;
+}
+
+.input-group-text {
+  height: 50px;
+}
+
+label {
+  display: inline-block !important;
+  padding: 1em;
 }
 </style>

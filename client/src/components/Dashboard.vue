@@ -7,7 +7,7 @@
       v-bind="socket"
       :title="socket.name"
       :description="socket.description"
-      :state="!!socket.switch_state"
+      :state="socket.switch_state"
       @put="put"
     />
   </div>
@@ -19,6 +19,7 @@ import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
 import router from "@/router/router";
 import Socket from "@/components/Socket.vue";
+import SocketData from "@/objects/Socket.js";
 
 export default {
   name: "Dashboard",
@@ -37,15 +38,21 @@ export default {
     this.axios
       .get("/sockets/list")
       .then((response) => {
-        this.sockets = response.data;
+        response.data.forEach((data) => {
+          this.sockets.push(new SocketData(data));
+        });
       })
       .catch(console.error);
   },
   methods: {
     async put(id, value) {
-      await this.axios.put(`/sockets/${id}`, { state: +value});
-      this.sockets.find(socket => socket.id === id).state = value;
-    }
+      try {
+        await this.axios.put(`/sockets/${id}`, { state: +value });
+        this.sockets.find((socket) => socket.id === id).switch_state = value;
+      } catch (err) {
+        console.error(err);
+      }
+    },
   },
   beforeRouteEnter(to, from, next) {
     if (store.getters.isAuthenticated) {

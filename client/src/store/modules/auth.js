@@ -3,19 +3,20 @@ import {
   AUTH_REQUEST,
   AUTH_ERROR,
   AUTH_SUCCESS,
-  AUTH_LOGOUT
+  AUTH_LOGOUT,
 } from "../actions/auth";
 
 import Vue from "vue";
+import router from "@/router/router";
 
 const state = {
   token: localStorage.getItem("user-token") || "",
-  status: ""
+  status: "",
 };
 
 const getters = {
-  isAuthenticated: state => !!state.token,
-  authStatus: state => state.status
+  isAuthenticated: (state) => !!state.token,
+  authStatus: (state) => state.status,
 };
 
 const actions = {
@@ -24,14 +25,14 @@ const actions = {
       commit(AUTH_REQUEST);
       Vue.prototype.axios
         .post("/auth/login", user)
-        .then(response => {
+        .then((response) => {
           const token = response.data.token;
           // store the token in localstorage
           localStorage.setItem("user-token", token);
           commit(AUTH_SUCCESS, response);
           resolve(response);
         })
-        .catch(err => {
+        .catch((err) => {
           commit(AUTH_ERROR, err);
           // if the request fails, remove any possible user token if possible
           localStorage.removeItem("user-token");
@@ -41,34 +42,35 @@ const actions = {
   },
 
   [AUTH_LOGOUT]: ({ commit }) => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       commit(AUTH_LOGOUT);
       delete Vue.prototype.axios.defaults.headers.common["Authorization"];
       localStorage.removeItem("user-token");
+      router.push("/login");
       resolve();
     });
-  }
+  },
 };
 
 const mutations = {
-  [AUTH_REQUEST]: state => {
+  [AUTH_REQUEST]: (state) => {
     state.status = "loading";
   },
   [AUTH_SUCCESS]: (state, token) => {
     state.status = "success";
     state.token = token;
   },
-  [AUTH_ERROR]: state => {
+  [AUTH_ERROR]: (state) => {
     state.status = "error";
   },
-  [AUTH_LOGOUT]: state => {
+  [AUTH_LOGOUT]: (state) => {
     state.token = "";
-  }
+  },
 };
 
 export default {
   getters,
   actions,
   mutations,
-  state
+  state,
 };
