@@ -7,6 +7,7 @@ import authInterceptor from './services/interceptors/auth';
 import Router from 'vue-router';
 import axios from "axios";
 import VueAxios from 'vue-axios';
+import Vuelidate from 'vuelidate';
 import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
@@ -24,6 +25,8 @@ Vue.use(IconsPlugin);
 Vue.use(Router);
 
 Vue.use(VueAxios, axios);
+
+Vue.use(Vuelidate);
 
 authInterceptor(axios);
 loadingInterceptor(axios);
