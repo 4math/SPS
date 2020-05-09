@@ -9,6 +9,22 @@
       :description="socket.description"
       :state="socket.switch_state"
       @put="put"
+      @commitDeletion="commitDeletion"
+    />
+
+    <b-button id="add-device" variant="primary" @click="showModal = !showModal">
+      +
+    </b-button>
+    
+    <DeviceRegister
+      :show="showModal"
+      @closeModal="showModal = !showModal"
+      @registerSocket="registerSocket"
+    />
+    <Confirm
+      :show-confirm="showConfirm"
+      @closeConfirm="showConfirm = !showConfirm"
+      @confirm="confirmToDelete"
     />
   </div>
 </template>
@@ -17,18 +33,24 @@
 import { mapGetters } from "vuex";
 import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
-import router from "@/router/router";
 import Socket from "@/components/Socket.vue";
+import DeviceRegister from "@/components/DeviceRegister.vue";
+import Confirm from "@/components/Confirm.vue";
 import SocketData from "@/objects/Socket.js";
 
 export default {
   name: "Dashboard",
   components: {
     Socket,
+    DeviceRegister,
+    Confirm,
   },
   data() {
     return {
       sockets: [],
+      showModal: false,
+      showConfirm: false,
+      idToDelete: -1,
     };
   },
   computed: {
@@ -53,6 +75,37 @@ export default {
         console.error(err);
       }
     },
+
+    async registerSocket(name, description, socketID) {
+      try {
+        const { data } = await this.axios.post("/sockets/add", {
+          name: name,
+          description: description,
+          socketID: socketID,
+          state: 0,
+        });
+        this.sockets.push(new SocketData(data));
+      } catch (err) {
+        console.error(err);
+      }
+    },
+
+    commitDeletion(id) {
+      this.showConfirm = true;
+      this.idToDelete = id;
+    },
+
+    async confirmToDelete() {
+      try {
+        await this.axios.delete(`/sockets/${this.idToDelete}`);
+        const index = this.sockets.findIndex(
+          (socket) => socket.id === this.idToDelete
+        );
+        this.sockets.splice(index, 1);
+      } catch (err) {
+        console.error(err);
+      }
+    },
   },
   beforeRouteEnter(to, from, next) {
     if (store.getters.isAuthenticated) {
@@ -61,8 +114,8 @@ export default {
         .then(() => {
           next();
         })
-        .catch(() => {
-          router.push("/login").catch(console.error);
+        .catch((err) => {
+          console.error(err);
         });
     }
   },
@@ -77,5 +130,15 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+#add-device {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5em;
 }
 </style>
