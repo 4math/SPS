@@ -24,6 +24,18 @@
           />
         </b-input-group-prepend>
       </b-input-group>
+
+      <b-dropdown id="actions" text="Actions" class="lg" menu-class="w-100">
+        <b-dropdown-item-button>
+          Go to the chart tab
+        </b-dropdown-item-button>
+        <b-dropdown-item-button>
+          Go to the event tab
+        </b-dropdown-item-button>
+        <b-dropdown-item-button variant="danger" @click="commit">
+          Delete Socket
+        </b-dropdown-item-button>
+      </b-dropdown>
     </b-card>
   </div>
 </template>
@@ -54,9 +66,7 @@ export default {
     },
   },
   data() {
-    return {
-      img: "",
-    };
+    return {};
   },
   computed: {
     image() {
@@ -65,14 +75,12 @@ export default {
       return require(`@/assets/images/socket${ext}.jpg`);
     },
   },
-  watch: {
-    img() {
-      this.image();
-    },
-  },
   methods: {
     put(value) {
       this.$emit("put", this.id, value);
+    },
+    commit() {
+      this.$emit("commitDeletion", this.id);
     },
   },
 };
@@ -103,5 +111,9 @@ export default {
 label {
   display: inline-block !important;
   padding: 1em;
+}
+
+#actions {
+  width: 100%;
 }
 </style>
