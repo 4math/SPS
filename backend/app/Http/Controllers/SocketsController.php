@@ -36,8 +36,9 @@ class SocketsController extends Controller
 
     public function list()
     {
+        // $sockets = Socket::all()->where('user_id', Auth::id())->values();
         return response(
-            Socket::all()->where('user_id', Auth::id())->jsonSerialize(), 
+            Auth::user()->sockets, 
             Response::HTTP_OK);
     }
 
@@ -97,7 +98,7 @@ class SocketsController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        if ($socket->user != Auth::id()) {
+        if ($socket->user->id != Auth::id()) {
             return response(null, Response::HTTP_FORBIDDEN);
         } else {
             Socket::destroy($id);
