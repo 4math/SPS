@@ -43,12 +43,26 @@ class SocketsController extends Controller
 
     public function show($id)
     {
-        $socket = Socket::all()->where('user_id', Auth::id())->where('id', $id);
-        if($socket != '[]'){
-            return response($socket->jsonSerialize(), Response::HTTP_OK);
-        } else {
-            return response($socket->jsonSerialize(), Response::HTTP_NO_CONTENT);
+        // $socket = Socket::all()->where('user_id', Auth::id())->where('id', $id);
+        // if($socket != '[]'){
+        //     return response($socket->jsonSerialize(), Response::HTTP_OK);
+        // } else {
+        //     return response($socket->jsonSerialize(), Response::HTTP_NO_CONTENT);
+        // }
+
+        try {
+            $socket = socket::findOrFail($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
         }
+
+        if($socket->user != Auth::id()){
+            return response(null, Response::HTTP_FORBIDDEN);
+        }
+
+        return response($socket->jsonSerialize(), Response::HTTP_OK);
     }
 
     public function put(Request $request)
@@ -67,12 +81,27 @@ class SocketsController extends Controller
 
     public function delete($id)
     {
-        if(Socket::all()->where('user_id', Auth::id())->where('id', $id) != '[]'){
+        // if(Socket::all()->where('user_id', Auth::id())->where('id', $id) != '[]'){
+        //     Socket::destroy($id);
+        //     return response(null, Response::HTTP_OK);
+        // } else
+        //     return response()->json([
+        //         'error' => 'Not found'
+        //     ], Response::HTTP_BAD_REQUEST);
+
+        try {
+            $socket = socket::findOrFail($id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($socket->user != Auth::id()) {
+            return response(null, Response::HTTP_FORBIDDEN);
+        } else {
             Socket::destroy($id);
             return response(null, Response::HTTP_OK);
-        } else
-            return response()->json([
-                'error' => 'Not found'
-            ], Response::HTTP_BAD_REQUEST);
+        }
     }
 }

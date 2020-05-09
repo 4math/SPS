@@ -31,7 +31,7 @@ class DataController extends Controller
         }
 
         return response(
-            Data::all()->where('socket_id', $socket_id)->jsonSerialize(),
+            Data::all()->where('socket_id', $socket_id)->toArray()->jsonSerialize(),
             Response::HTTP_OK
         );
     }
