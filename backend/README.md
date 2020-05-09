@@ -34,6 +34,10 @@ composer dumpautoload
 ```
 php artisan serve
 ```
+## Serve the application on the local network: 
+```
+php artisan serve --host=0.0.0.0
+```
 
 ## Run the database migrations :
 ```

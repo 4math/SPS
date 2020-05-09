@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateDataTable extends Migration
 {
+    // TODO: Rename `data` to `measurements` 
     /**
      * Run the migrations.
      *

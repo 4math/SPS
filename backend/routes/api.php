@@ -13,7 +13,7 @@ Route::prefix('auth')->group(function () {
 	Route::post('register', 'AuthController@register');
 	Route::post('login', 'AuthController@login');
 	Route::get('refresh', 'AuthController@refresh');
-	Route::group(['middleware' => 'auth:api'], function () {
+	Route::group(['middleware' => ['auth:api', 'jwt.auth', 'jwt.refresh', 'cors']], function () {
 		Route::get('user', 'AuthController@user');
 		Route::get('logout', 'AuthController@logout');
 	});
@@ -33,6 +33,7 @@ Route::prefix('sockets')->group(function (){
 		Route::post('add', 'SocketsController@add');
 		Route::get('list', 'SocketsController@list');
 		Route::get('show/{id}', 'SocketsController@show');
+		Route::put('{id}', 'SocketsController@put');
 		Route::delete('{id}', 'SocketsController@delete');
 	});
 });

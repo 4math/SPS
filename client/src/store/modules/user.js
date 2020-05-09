@@ -19,10 +19,13 @@ const getters = {
 const actions = {
 
     [USER_REQUEST]: ({ commit, dispatch }) => {
+
+
         return new Promise((resolve, reject) => {
             commit(USER_REQUEST);
-            axios.get("/users/list")
+            axios.get("/auth/user")
                 .then(response => {
+
                     commit(USER_SUCCESS, response);
                     resolve();
                 })
@@ -45,8 +48,7 @@ const mutations = {
     },
     [USER_SUCCESS]: (state, response) => {
         state.status = "success";
-        // Vue.set(state, "profile", resp);
-        console.log(`response is ${response}`);
+        state.profile = response.data;
     },
     [USER_ERROR]: state => {
         state.status = "error";
