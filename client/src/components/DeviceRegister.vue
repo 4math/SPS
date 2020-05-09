@@ -129,7 +129,6 @@ export default {
       // don't submit if input is empty
       this.$v.form.$touch();
       if (this.$v.form.$anyError && this.$v.form.$anyDirty) {
-        console.log("ok");
         return;
       }
       // Hide the modal manually
