@@ -42,6 +42,7 @@ Route::prefix('sockets')->group(function (){
 
 // Data
 Route::prefix('measurements')->group(function (){
+	Route::post('add', 'MeasurementsController@add');
 	Route::group(['middleware' => 'auth:api'], function (){
 		Route::get('list/{socket_id}', 'MeasurementsController@list');
 		Route::delete('{id}', 'MeasurementsController@delete');
