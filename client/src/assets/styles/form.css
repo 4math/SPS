@@ -1,0 +1,37 @@
+
+h1 {
+    margin: 1em !important;
+}
+
+.text-input {
+    border-radius: 5px;
+    width: 100%;
+    margin: auto;
+    display: block !important;
+    max-width: 500px;
+}
+
+label {
+    display: inline-block;
+    font-size: 1.2em;
+    margin: auto;
+    display: block !important;
+}
+
+.form-feedback {
+    text-align: center;
+}
+
+.submit-btn {
+    margin: auto;
+    display: block !important;
+    margin-bottom: 3em;
+}
+
+.form-input {
+    width: 55%;
+    max-width: 500px;
+    margin: auto;
+    text-align: left;
+    margin-top: 20px;
+}

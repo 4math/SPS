@@ -17,10 +17,11 @@ class CreateSocketsTable extends Migration
             $table->id();
 
             $table->bigInteger('user_id')->unsigned();
-            $table->foreign('user_id')->references('id')->on('users');
+            // TODO: change deleting method, cascade delete not working after Laravel 5
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->string('name');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->boolean('switch_state')->default(false);
         });
     }

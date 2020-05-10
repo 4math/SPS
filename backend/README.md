@@ -19,13 +19,24 @@ composer install
 ```
 php artisan key:generate
 ```
-
+- Generate JWT key
+```
+php artisan jwt:secret
+```
+- Update database after the changes
+```
+composer dumpautoload
+```
 
 - Keep your credentials private!
 
 ## Serve the application on the PHP development server :
 ```
 php artisan serve
+```
+## Serve the application on the local network: 
+```
+php artisan serve --host=0.0.0.0
 ```
 
 ## Run the database migrations :
