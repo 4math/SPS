@@ -26,7 +26,7 @@ class RenameDataTableToMeasurements extends Migration
     public function down()
     {
         Schema::table('data', function (Blueprint $table) {
-            //
+            Schema::rename('measurements', 'data');
         });
     }
 }
