@@ -40,7 +40,7 @@ Route::prefix('sockets')->group(function (){
 	});
 });
 
-// Data
+// Measurements
 Route::prefix('measurements')->group(function (){
 	Route::post('add', 'MeasurementsController@add');
 	Route::group(['middleware' => 'auth:api'], function (){

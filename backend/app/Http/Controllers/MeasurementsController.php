@@ -16,7 +16,7 @@ class MeasurementsController extends Controller
         return response(Measurements::all()->jsonSerialize(), Response::HTTP_OK);
     }
 
-    public function add($request)
+    public function add(Request $request)
     {
         $v = Validator::make($request->all(), [
             'unique_id' => 'required|exists:sockets'
