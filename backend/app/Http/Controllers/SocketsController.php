@@ -31,6 +31,23 @@ class SocketsController extends Controller
         return response($socket->jsonSerialize(), Response::HTTP_OK);
     }
 
+    public function getState(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'unique_id' => 'required|exists:sockets',
+        ]);
+        if ($v->fails()) {
+            return response()->json([
+                'errors' => $v->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $socket = Socket::whereUniqueId($request->unique_id)->first();
+        return response()->json([
+            "state" => $socket->switch_state,
+        ], Response::HTTP_OK);
+    }
+
     public function connect(Request $request)
     {
         $v = Validator::make($request->all(), [
