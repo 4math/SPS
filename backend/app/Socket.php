@@ -44,6 +44,6 @@ class Socket extends Model
     
     public function data()
     {
-        return $this->hasMany(Data::class);
+        return $this->hasMany(Measurements::class);
     }
 }
