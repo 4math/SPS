@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Socket whereSwitchState($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Socket whereUserId($value)
  * @mixin \Eloquent
+ * @property string $unique_id
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Socket whereUniqueId($value)
  */
 class Socket extends Model
 {

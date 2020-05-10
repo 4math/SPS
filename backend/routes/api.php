@@ -29,8 +29,9 @@ Route::prefix('user')->group(function (){
 
 // Sockets
 Route::prefix('sockets')->group(function (){
+	Route::post('add', 'SocketsController@add');
 	Route::group(['middleware' => 'auth:api'], function (){
-		Route::post('add', 'SocketsController@add');
+		Route::put('connect', 'SocketsController@connect');
 		Route::get('list', 'SocketsController@list');
 		Route::get('show/{id}', 'SocketsController@show');
 		Route::put('{id}', 'SocketsController@put');

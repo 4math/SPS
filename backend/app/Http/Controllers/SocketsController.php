@@ -18,7 +18,7 @@ class SocketsController extends Controller
     public function add(Request $request)
     {
         $v = Validator::make($request->all(), [
-            'name' => 'required|min:3',
+            'unique_id' => 'required|unique:sockets',
         ]);
         if ($v->fails()) {
             return response()->json([
@@ -26,10 +26,27 @@ class SocketsController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         $socket = new Socket;
+        $socket->unique_id = $request->unique_id;
+        $socket->save();
+        return response($socket->jsonSerialize(), Response::HTTP_OK);
+    }
+
+    public function connect(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'name' => 'required|min:3',
+            'unique_id' => 'required|exists:sockets'
+        ]);
+        if ($v->fails()) {
+            return response()->json([
+                'errors' => $v->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $socket = Socket::whereUniqueId($request->unique_id)->first();
         $socket->user_id = Auth::id();
         $socket->name = $request->name;
         $socket->description = $request->description;
-        $socket->switch_state = $request->state;
         $socket->save();
         return response($socket->jsonSerialize(), Response::HTTP_OK);
     }
@@ -37,9 +54,7 @@ class SocketsController extends Controller
     public function list()
     {
         // $sockets = Socket::all()->where('user_id', Auth::id())->values();
-        return response(
-            Auth::user()->sockets, 
-            Response::HTTP_OK);
+        return response(Auth::user()->sockets, Response::HTTP_OK);
     }
 
     public function show($id)
@@ -52,7 +67,7 @@ class SocketsController extends Controller
         // }
 
         try {
-            $socket = socket::findOrFail($id);
+            $socket = Socket::findOrFail($id);
         } catch (\Throwable $th) {
             return response()->json([
                 'error' => $th->getMessage(),
