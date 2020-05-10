@@ -30,7 +30,7 @@ Route::prefix('user')->group(function (){
 // Sockets
 Route::prefix('sockets')->group(function (){
 	Route::post('add', 'SocketsController@add');
-	Route::get('state', 'SocketsController@getState');
+	//Route::get('state', 'SocketsController@getState');
 	Route::group(['middleware' => 'auth:api'], function (){
 		Route::put('connect', 'SocketsController@connect');
 		Route::get('list', 'SocketsController@list');
