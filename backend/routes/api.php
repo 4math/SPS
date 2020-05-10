@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 // DEBUG
 Route::get('users/listD', 'UsersController@indexD');
 Route::get('sockets/listD', 'SocketsController@indexD');
-Route::get('data/listD', 'DataController@indexD');
+Route::get('measurements/listD', 'MeasurementsController@indexD');
 
 
 // Authorization
@@ -29,8 +29,10 @@ Route::prefix('user')->group(function (){
 
 // Sockets
 Route::prefix('sockets')->group(function (){
+	Route::post('add', 'SocketsController@add');
+	Route::get('state', 'SocketsController@getState');
 	Route::group(['middleware' => 'auth:api'], function (){
-		Route::post('add', 'SocketsController@add');
+		Route::put('connect', 'SocketsController@connect');
 		Route::get('list', 'SocketsController@list');
 		Route::get('show/{id}', 'SocketsController@show');
 		Route::put('{id}', 'SocketsController@put');
@@ -38,10 +40,11 @@ Route::prefix('sockets')->group(function (){
 	});
 });
 
-// Data
-Route::prefix('data')->group(function (){
+// Measurements
+Route::prefix('measurements')->group(function (){
+	Route::post('add', 'MeasurementsController@add');
 	Route::group(['middleware' => 'auth:api'], function (){
-		Route::get('list/{socket_id}', 'DataController@list');
-		Route::delete('{id}', 'DataController@delete');
+		Route::get('list/{socket_id}', 'MeasurementsController@list');
+		Route::delete('{id}', 'MeasurementsController@delete');
 	});
 });

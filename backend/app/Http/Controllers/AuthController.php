@@ -13,6 +13,18 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
+    private function sendToken($token)
+    {
+        if ($token) {
+            return response()->json([
+                'token' => $token,
+            ], Response::HTTP_OK);
+        } else {
+            return response()->json([
+                'error' => 'Could not authenticate',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
 
     public function register(Request $request)
     {
@@ -52,15 +64,7 @@ class AuthController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        if (!$token) {
-            return response()->json([
-                'error' => 'Could not authenticate',
-            ], Response::HTTP_UNAUTHORIZED);
-        } else {
-            return response()->json([
-                'token' => $token
-            ], Response::HTTP_OK);
-        }
+        return $this->sendToken($token);
     }
 
     public function logout()
@@ -73,8 +77,11 @@ class AuthController extends Controller
 
     public function user()
     {
-        $user = User::find(Auth::id());
-        return response($user->jsonSerialize(), Response::HTTP_OK);
+        // $user = User::find(Auth::id());
+        // return response($user->jsonSerialize(), Response::HTTP_OK);
+
+        // We can get user and all his dependencies without filtering entire table
+        return response(Auth::user(), Response::HTTP_OK);
     }
 
     public function refresh()
@@ -94,16 +101,7 @@ class AuthController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        if ($token) {
-            return response()->json([
-                'token' => $token,
-            ], Response::HTTP_OK);
-        }
-        else {
-            return response()->json([
-                'error' => 'Could not authenticate',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        return $this->sendToken($token);
     }
 
     private function guard()
