@@ -33,7 +33,7 @@ class MeasurementsController extends Controller
         $measurement->power = $request->power;
         $measurement->created_at = now();
         $measurement->save();
-        return response($socket->switch_state, Response::HTTP_OK);
+        return response()->json(['state' => $socket->switch_state], Response::HTTP_OK);
     }
 
     public function list($socket_id)
