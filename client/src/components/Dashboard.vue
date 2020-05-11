@@ -15,7 +15,7 @@
     <b-button id="add-device" variant="primary" @click="showModal = !showModal">
       +
     </b-button>
-    
+
     <DeviceRegister
       :show="showModal"
       @closeModal="showModal = !showModal"
@@ -85,7 +85,9 @@ export default {
         });
         this.sockets.push(new SocketData(data));
       } catch (err) {
-        console.error(err);
+        for (let e in err.errors) {
+          this.makeToast(err.errors[e][0]);
+        }
       }
     },
 
@@ -104,6 +106,16 @@ export default {
       } catch (err) {
         console.error(err);
       }
+    },
+
+    makeToast(message, variant = "danger") {
+      this.$bvToast.toast(message, {
+        title: "SPS message",
+        toaster: "b-toaster-top-left",
+        autoHideDelay: 8000,
+        appendToast: true,
+        variant: variant,
+      });
     },
   },
   beforeRouteEnter(to, from, next) {
