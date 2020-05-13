@@ -13,7 +13,7 @@
           invalid-feedback="E-mail is required"
         >
           <b-form-input
-            id="email-input"
+            id="email"
             v-model="$v.email.$model"
             class="text-input"
             :state="validateState('email')"
@@ -32,7 +32,7 @@
           invalid-feedback="Password is required"
         >
           <b-form-input
-            id="password-input"
+            id="password"
             v-model="$v.password.$model"
             class="text-input"
             :state="validateState('password')"
