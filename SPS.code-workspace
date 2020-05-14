@@ -8,5 +8,9 @@
 			"path": "arduino_firmware"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"functional": "cpp"
+		}
+	}
 }
