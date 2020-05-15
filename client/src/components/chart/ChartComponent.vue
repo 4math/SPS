@@ -2,7 +2,7 @@
   <div id="chart">
     <b-card id="container">
       <LineChart ref="chart" :chart-data="dataCollection" :options="options" />
-      
+
       <b-button id="add-data" @click="addData()">
         Add Data
       </b-button>
@@ -10,7 +10,7 @@
         id="dropdown-right"
         right
         text="Scale"
-        variant="primary" 
+        variant="primary"
         class="m-2"
       >
         <b-dropdown-item href="#">
@@ -46,7 +46,33 @@ export default {
         },
         animation: {
           duration: 200,
-        }
+        },
+        tooltips: {
+          // backgroundColor: "#4F5565", // greyish
+          backgroundColor: "#2A2B2E",
+          titleFontStyle: "normal",
+          titleFontSize: 18,
+          bodyFontFamily: "'Proxima Nova', sans-serif",
+          cornerRadius: 3,
+          // bodyFontColor: '#20C4C8', //neon
+          bodyFontColor: '#87FF65',
+          bodyFontSize: 14,
+          xPadding: 14,
+          yPadding: 14,
+          displayColors: false,
+          mode: "index",
+          intersect: false,
+          callbacks: {
+            title: (tooltipItem) => {
+              return `🕒 ${tooltipItem[0].xLabel}`;
+            },
+            label: (tooltipItem, data) => {
+              let dataset = data.datasets[tooltipItem.datasetIndex];
+              let currentValue = dataset.data[tooltipItem.index];
+              return `⚡ Consumed power: ${currentValue.toLocaleString()}`;
+            },
+          },
+        },
       },
     };
   },
@@ -122,7 +148,5 @@ export default {
   position: absolute;
   bottom: 0;
   right: 0;
-
 }
-
 </style>
