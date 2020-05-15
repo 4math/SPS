@@ -6,11 +6,6 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPClient.h>
 
-enum SetupStates
-{
-	DataInROM = 1,
-};
-
 class Socket
 {
 public:
@@ -19,8 +14,6 @@ public:
 	String ssid;
 	String pass;
 	String backend_ip;
-
-	byte setup_state = 0;
 
 	int switch_state = 0;
 	int data_post_rate = 1000;

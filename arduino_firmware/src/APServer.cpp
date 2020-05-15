@@ -16,6 +16,17 @@ void APServer::HandleClient()
 	server.handleClient();
 }
 
+bool APServer::isDataInROM()
+{
+	if(data_state == DataInROM)
+	{
+		EEPROM.write(0, DataInROM);
+		EEPROM.commit();
+		return true;
+	}
+	return false;
+}
+
 APServer::APServer()
 {
 	server.on("/", []() {
@@ -40,10 +51,9 @@ APServer::APServer()
 		for (int i = 0; i < backend_ip.length(); i++)
 			EEPROM.write(EEPROM_pos++, backend_ip[i]);
 		EEPROM.write(EEPROM_pos++, '\0');
-
-		EEPROM.write(0, DataInROM); // setup state written in 0th byte
-
 		EEPROM.commit();
+
+		data_state = DataInROM;
 
 		server.send(200, "text/html", submit_page);
 		delay(1000);

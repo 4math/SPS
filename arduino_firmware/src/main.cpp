@@ -11,15 +11,11 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);
 
     ap_server.Start();
-
-    byte setup_state = 0;
     
-    do
+    while (!ap_server.isDataInROM())
     {
-        // wait until user provides data and while they are written to memory.
         ap_server.HandleClient();
-        setup_state = EEPROM.read(0);
-    } while (setup_state != DataInROM);
+    }
 
     socket.ParseDataFromROM();
     socket.ConnectToWiFi();

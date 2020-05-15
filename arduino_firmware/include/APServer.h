@@ -8,6 +8,11 @@
 #include "html_pages.h"
 #include "Socket.h"
 
+enum SetupStates
+{
+	DataInROM = 1,
+};
+
 class APServer
 {
 public:
@@ -17,8 +22,12 @@ public:
 	const char *ssid = "SPS-AccessPoint";
 	const char *password = "12345678";
 
+	byte data_state = EEPROM.read(0);
+
 	void Start();
 	void HandleClient();
+
+	bool isDataInROM();
 
 	APServer();
 	~APServer();
