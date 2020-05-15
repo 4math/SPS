@@ -28,6 +28,10 @@ class MeasurementsController extends Controller
         }
 
         $socket = Socket::whereUniqueId($request->unique_id)->first();
+        if(!$socket->is_connected)
+        {
+            return response()->json(['is_connected' => $socket->is_connected], Response::HTTP_FORBIDDEN);
+        }
         $measurement = new Measurements();
         $measurement->socket_id = $socket->id;
         $measurement->power = $request->power;

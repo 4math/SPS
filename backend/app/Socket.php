@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  * @property string $unique_id
  * @method static \Illuminate\Database\Eloquent\Builder|\App\Socket whereUniqueId($value)
+ * @property int $is_connected
+ * @method static \Illuminate\Database\Eloquent\Builder|\App\Socket whereIsConnected($value)
  */
 class Socket extends Model
 {
