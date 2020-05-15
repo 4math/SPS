@@ -4,7 +4,7 @@ import Login from "@/components/auth/Login";
 import Dashboard from "@/components/Dashboard";
 import Register from "@/components/auth/Register";
 import EventsPage from "@/components/EventsPage";
-import ChartsPage from "@/components/ChartsPage";
+import ChartsPage from "@/components/chart/ChartsPage";
 import store from "@/store";
 
 const ifNotAuth = (to, from, next) => {
