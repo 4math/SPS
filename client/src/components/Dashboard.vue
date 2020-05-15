@@ -78,11 +78,10 @@ export default {
 
     async registerSocket(name, description, socketID) {
       try {
-        const { data } = await this.axios.post("/sockets/add", {
+        const { data } = await this.axios.put("/sockets/connect", {
           name: name,
           description: description,
-          socketID: socketID,
-          state: 0,
+          unique_id: socketID,
         });
         this.sockets.push(new SocketData(data));
       } catch (err) {
