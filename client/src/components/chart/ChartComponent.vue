@@ -72,6 +72,7 @@ export default {
               return `⚡ Consumed power: ${currentValue.toLocaleString()}`;
             },
           },
+          
         },
       },
     };
