@@ -10,44 +10,63 @@ using json = nlohmann::json;
 #include <thread>
 
 struct Settings {
-	bool enabled = true;
-	long long report_delay = 2000;
+	int state = 1;
+	long long report_delay = 1000;
 };
 
 int main() {
-	std::string UNIQUE_ID("12345asdfg");
+	std::string unique_id("blablakek");
 
+	{
+		std::cout << "Default unique_id is 'blablakek', enter your unique_id to change or '-' leave it as is: ";
+		std::string temp_unique_id;
+		std::cin >> temp_unique_id;
+		if (temp_unique_id != "-")
+			unique_id = temp_unique_id;
+	}
+	
 	Settings settings;
+	Client client("127.0.0.1", 8000);
 
-	Client client("127.0.0.1", 1357);
+	bool socket_added = false;
 
 	while (true) {
-		json data_body_json = {
-			{"Data", rand() % 1000}
-		};
+		if (!socket_added) {
+			json payload = {
+				{"unique_id", unique_id}
+			};
 
-		Headers headers = {
-			{"Unique-ID", UNIQUE_ID}
-		};
+			auto response = client.Post("/api/sockets/add", payload.dump(-1), "application/json");
+			if (response && response->status != 200) {
+				std::cout << response->body << "\n";
+			}
 
-		auto status_response = client.Get("/status", headers);
-		if (status_response && status_response->status == 200) {
-			json status_json = json::parse(status_response->body);
-			std::cout << status_json.dump(1, '\t');
-
-			if (status_json["Enabled"].is_boolean())
-				settings.enabled = status_json["Enabled"].get<bool>();
-			else
-				std::cout << "'Enabled' object is null or not boolean\n";
-
-			if (status_json["Report-Delay"].is_number_integer())
-				settings.report_delay = status_json["Report-Delay"].get<long long>();
-			else
-				std::cout << "'Report-Delay' object is null or not float\n";
+			socket_added = true;
 		}
 
-		auto data_response = client.Post("/data", headers, data_body_json.dump(-1), "application/json");
-		std::this_thread::sleep_for(std::chrono::milliseconds(settings.report_delay));
+		{
+			json payload = {
+				{"power", rand() % 1000},
+				{"unique_id", unique_id}
+			};
+
+			auto response = client.Post("/api/measurements/add", payload.dump(-1), "application/json");
+
+			if (response) { 
+				if (response->status == 200) {
+					json response_payload = json::parse(response->body);
+					settings.state = response_payload["state"].get<int>();
+
+					std::cout << (settings.state == 0 ? "disabled\n" : "enabled\n");
+				}
+				else {
+					std::cout << response->body << "\n";
+				}
+			}
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(settings.report_delay));
+		}
+		
 	}
 
 	return 0;
