@@ -86,8 +86,7 @@ export default {
       this.dataCollection = {
         labels: new Array(3)
           .fill(null)
-          // eslint-disable-next-line no-unused-vars
-          .map((_) => this.getTime())
+          .map(() => this.getTime())
           .sort((a, b) => {
             if (a > b) {
               return 1;
@@ -101,8 +100,7 @@ export default {
           {
             label: "Consumed power",
             backgroundColor: "#f87979",
-            // eslint-disable-next-line no-unused-vars
-            data: new Array(3).fill(null).map((_) => this.getRandomInt()),
+            data: new Array(3).fill(null).map(() => this.getRandomInt()),
           },
         ],
       };
