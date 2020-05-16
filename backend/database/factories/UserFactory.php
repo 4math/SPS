@@ -1,5 +1,7 @@
 <?php
 
-$factory->define(App\User::class, function () {
+use App\Classes\Model\User;
+
+$factory->define(User::class, function () {
 	return null;
 });

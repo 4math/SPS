@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Measurements;
-use App\Socket;
+use App\Classes\Model\Measurements;
+use App\Classes\Model\Socket;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;

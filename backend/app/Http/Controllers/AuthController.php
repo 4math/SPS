@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
+use App\Classes\Model\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Carbon\Carbon;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
