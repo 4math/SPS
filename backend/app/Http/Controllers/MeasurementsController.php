@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Measurements;
 use App\Socket;
+use App\Events\WebSocketPublish;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+
+use App\Console\Commands\WebSocketPublishInstance;
 
 class MeasurementsController extends Controller
 {
@@ -33,6 +36,20 @@ class MeasurementsController extends Controller
         $measurement->power = $request->power;
         $measurement->created_at = now();
         $measurement->save();
+
+        // $redis = WebSocketPublishInstance::getRedisClient();
+        // $redis->publish('test', json_encode(['event' => 'messages.new', 'data' => 'hello, world!']));
+
+        $redis = new \Predis\Client([
+            'scheme' => 'tcp',
+            // 'host' => env('REDIS_HOST', '127.0.0.1'),
+            // 'port' => env('REDIS_PORT', 6379), 
+            'host' => '127.0.0.1',
+            'port' => 6379,
+            'persistent' => true,
+        ]);
+        $redis->publish('test', json_encode(['event' => 'messages.new', 'data' => $request->power]));
+
         return response()->json(['state' => $socket->switch_state], Response::HTTP_OK);
     }
 

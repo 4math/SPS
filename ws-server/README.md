@@ -1,6 +1,12 @@
 ## Install all packages
 ```
-npm install 
+npm install -g webpack
+npm install
+```
+
+## Copy env
+```
+cp .env.example .env
 ```
 
 ## Run dev version

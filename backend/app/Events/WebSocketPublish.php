@@ -8,6 +8,8 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
+use App\Console\Commands\WebSocketPublishInstance;
+
 class WebSocketPublish implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
@@ -22,16 +24,7 @@ class WebSocketPublish implements ShouldBroadcast
      */
     public function __construct()
     {
-        $this->from = 'Bond';
-        $this->to = 'Bean';
-        $this->message = 'You don\'t say??';
-
-        $redis = new \Predis\Client([
-            'scheme' => 'tcp',
-            'host' => '127.0.0.1',
-            'port' => 6379,
-        ]);
-
+        $redis = WebSocketPublishInstance::getRedisClient();
         $redis->publish('test', json_encode(['event' => 'messages.new', 'data' => 'hello, world!']));
     }
 
