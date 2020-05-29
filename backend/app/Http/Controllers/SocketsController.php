@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Socket;
+use App\Classes\Model\Socket;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -64,6 +64,7 @@ class SocketsController extends Controller
         $socket->user_id = Auth::id();
         $socket->name = $request->name;
         $socket->description = $request->description;
+        $socket->is_connected = true;
         $socket->save();
         return response($socket->jsonSerialize(), Response::HTTP_OK);
     }
@@ -91,7 +92,7 @@ class SocketsController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        if($socket->user != Auth::id()){
+        if($socket->user->id != Auth::id()){
             return response(null, Response::HTTP_FORBIDDEN);
         }
 
@@ -100,16 +101,32 @@ class SocketsController extends Controller
 
     public function put(Request $request)
     {
-        $socket = Socket::all()->where('user_id', Auth::id())->where('id', $request->id)->first();
-        // Did not understand how to check whether the first element is empty...
-        if($socket){
-            $socket->switch_state = $request->state;
-            $socket->save();
-            return response($socket->jsonSerialize(), Response::HTTP_OK);
-        } else {
-            // Does not work
-            return response()->json(['error' => "Socket with such id does not exist"], Response::HTTP_NO_CONTENT);
+        // $socket = Socket::all()->where('user_id', Auth::id())->where('id', $request->id)->first();
+        // // Did not understand how to check whether the first element is empty...
+        // if ($socket) {
+        //     $socket->switch_state = $request->state;
+        //     $socket->save();
+        //     return response($socket->jsonSerialize(), Response::HTTP_OK);
+        // } else {
+        //     // Does not work
+        //     return response()->json(['error' => "Socket with such id does not exist"], Response::HTTP_NO_CONTENT);
+        // }
+
+        try {
+            $socket = Socket::findOrFail($request->id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
         }
+
+        if ($socket->user->id != Auth::id()) {
+            return response(null, Response::HTTP_FORBIDDEN);
+        }
+
+        $socket->switch_state = $request->state;
+        $socket->save();
+        return response($socket->jsonSerialize(), Response::HTTP_OK);
     }
 
     public function delete($id)

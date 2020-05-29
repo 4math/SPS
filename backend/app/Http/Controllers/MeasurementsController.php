@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Measurements;
-use App\Socket;
+use App\Classes\Model\Measurements;
+use App\Classes\Model\Socket;
 use App\Events\WebSocketPublish;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -31,6 +31,10 @@ class MeasurementsController extends Controller
         }
 
         $socket = Socket::whereUniqueId($request->unique_id)->first();
+        if(!$socket->is_connected)
+        {
+            return response()->json(['is_connected' => $socket->is_connected], Response::HTTP_FORBIDDEN);
+        }
         $measurement = new Measurements();
         $measurement->socket_id = $socket->id;
         $measurement->power = $request->power;
