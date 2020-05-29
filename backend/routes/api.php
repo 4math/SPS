@@ -48,3 +48,9 @@ Route::prefix('measurements')->group(function (){
 		Route::delete('{id}', 'MeasurementsController@delete');
 	});
 });
+
+
+Route::get('/fire', function() {
+	event(new App\Events\WebSocketPublish());
+	echo "Published";
+});

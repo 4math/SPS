@@ -82,7 +82,7 @@ export default {
   validations: {
     form: {
       socketID: {
-        type: Number,
+        type: String,
         required
       },
       name: {

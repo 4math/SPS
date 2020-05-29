@@ -47,22 +47,18 @@ export default {
     id: {
       type: Number,
       required: true,
-      default: 0,
     },
     title: {
       type: String,
       required: true,
-      default: "",
     },
     description: {
       type: String,
-      required: true,
       default: "",
     },
     state: {
       type: Boolean,
       required: true,
-      default: false,
     },
   },
   data() {
