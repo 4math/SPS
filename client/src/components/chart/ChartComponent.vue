@@ -3,7 +3,7 @@
     <b-card id="container">
       <LineChart ref="chart" :chart-data="dataCollection" :options="options" />
 
-      <b-button id="add-data" @click="addData()">
+      <b-button id="add-data" @click="addDataBtn()">
         Add Data
       </b-button>
       <b-dropdown
@@ -112,11 +112,16 @@ export default {
       const date = new Date();
       return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     },
-    addData() {
+    addDataBtn() {
       this.dataCollection.labels.push(this.getTime());
       this.dataCollection.datasets[0].data.push(this.getRandomInt());
       this.$refs.chart.renderChart(this.dataCollection, this.options);
     },
+    addData(data) {
+      this.dataCollection.labels.push(this.getTime());
+      this.dataCollection.datasets[0].data.push(data);
+      this.$refs.chart.renderChart(this.dataCollection, this.options);
+    }
   },
 };
 </script>
