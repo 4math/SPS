@@ -2,8 +2,8 @@ import express from "express";
 import http from "http";
 import redis from "redis";
 import * as dotenv from "dotenv";
-import io from "socket.io";
-import Log from "./../utils/logger";
+import io, { Socket } from "socket.io";
+import Logger from "./../utils/logger";
 
 dotenv.config();
 
@@ -16,7 +16,7 @@ const socket: io.Server = io.listen(server, {
   serveClient: false,
 });
 
-const logger: Log = new Log();
+const logger: Logger = new Logger();
 
 /*
  * Redis pub/sub
@@ -29,40 +29,27 @@ const sub = redis.createClient({
 });
 
 sub.on("error", function (error) {
-  console.log("ERROR " + error);
+  logger.error(error);
 });
 
 sub.on("subscribe", function (channel, count) {
   logger.info(`SUBSCRIBE, ${channel}, ${count}`);
-  console.log("SUBSCRIBE", channel, count);
 });
 
-interface IPayload {
-  event: string;
-  data: string;
+interface IUsers {
+  [key: number]: io.Socket;
 }
 
-// Handle messages from channels we're subscribed to
-sub.on("message", (channel, message) => {
-  console.log("INCOMING MESSAGE", channel, message);
-
-  try {
-    const payload: IPayload = JSON.parse(message);
-    // Send the data through to any client in the channel room (!)
-    // (i.e. server room, usually being just the one user)
-    socket.sockets.in(channel).emit(payload.event, payload.data);
-  } catch (err) {
-    console.error("Couldn't parse: " + err);
-  }
-});
+const users: IUsers = {};
 
 socket.sockets.on("connection", function (socket) {
-  console.log("NEW CLIENT CONNECTED");
+  logger.info("NEW CLIENT CONNECTED");
 
-  socket.send("welcome!");
+  const userId: number = socket.handshake.query.userid as number;
+  users[userId] = socket;
 
   socket.on("subscribe-to-channel", function (data) {
-    console.log("SUBSCRIBE TO CHANNEL", data);
+    logger.info("SUBSCRIBE TO CHANNEL " + data);
 
     // Subscribe to the Redis channel using our global subscriber
     sub.subscribe(data.channel);
@@ -74,16 +61,34 @@ socket.sockets.on("connection", function (socket) {
   });
 
   socket.on("disconnect", function () {
-    console.log("DISCONNECT");
+    logger.info("DISCONNECT");
   });
 });
 
-app.get("/", (req, res) => {
-  res.send("The sedulous hyena ate the antelope!");
+interface IPayload {
+  event: string;
+  data: string;
+  userId: number;
+  socketId: number;
+}
+
+// Handle messages from channels we're subscribed to
+sub.on("message", (channel, message) => {
+  logger.info(`INCOMING MESSAGE, ${channel}, ${message}`);
+
+  try {
+    const payload: IPayload = JSON.parse(message);
+    // Send the data through to any client in the channel room (!)
+    // (i.e. server room, usually being just the one user)
+    // socket.sockets.in(channel).emit(payload.event, payload.data, payload.userId);
+    users[payload.userId].emit(payload.event, [payload.data, payload.socketId]);
+  } catch (err) {
+    logger.error("Couldn't parse: " + err);
+  }
 });
 
 const port: string = process.env.PORT;
 
 server.listen(port, () => {
-  return console.log(`server is listening on ${port}`);
+  logger.info(`server is listening on ${port}`);
 });
