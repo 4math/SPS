@@ -38,8 +38,6 @@ const actions = {
         });
     },
 
-
-
 };
 
 const mutations = {
