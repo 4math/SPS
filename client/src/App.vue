@@ -16,32 +16,39 @@ import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 
 export default {
-    name: "App",
-    components: {
-        Navigator,
-        Loading
-    },
-    data() {
-        return {};
-    },
-    computed: {
-        ...mapGetters(["isLoading"])
-    },
-    created() {}
+  name: "App",
+  components: {
+    Navigator,
+    Loading,
+  },
+  data() {
+    return {};
+  },
+  computed: {
+    ...mapGetters(["isLoading"]),
+  },
+  created() {},
 };
 </script>
 
 <style>
 #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 0 !important;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 0 !important;
+  height: calc(100% - 102px);
 }
 
-body {
-    margin: 0;
+html, body {
+  height: 100% !important;
+  width: 100%;
+  margin: 0;
+}
+
+#main-container {
+  height: 100%;
 }
 </style>

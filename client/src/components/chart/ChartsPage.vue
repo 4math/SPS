@@ -1,6 +1,5 @@
 <template>
-  <div id="charts">
-    <h1>Welcome to the Charts tab!</h1>
+  <div id="chart-container">
     <ChartComponent ref="chart" />
   </div>
 </template>
@@ -9,6 +8,8 @@
 import ChartComponent from "@/components/chart/ChartComponent";
 import io from "socket.io-client";
 import { mapGetters } from "vuex";
+import { USER_REQUEST } from "@/store/actions/user";
+import store from "@/store";
 
 export default {
   name: "ChartsPage",
@@ -22,7 +23,8 @@ export default {
     ...mapGetters(["getProfile"]),
   },
   mounted() {
-    const socket = io.connect("ws://localhost:8090", {
+    // eslint-disable-next-line no-undef
+    const socket = io.connect(process.env.VUE_APP_WS_URL, {
       transports: ["websocket"],
       upgrade: false,
       query: `userid=${this.getProfile.id}`,
@@ -37,7 +39,7 @@ export default {
 
       socket.on("messages.new", (data) => {
         console.log("NEW PRIVATE MESSAGE", data);
-        this.$refs.chart.addData(data[0]);
+        this.$refs.chart.addData(data[0], parseInt(data[1]));  
       });
 
       socket.on("disconnect", function() {
@@ -53,22 +55,31 @@ export default {
     });
   },
   methods: {},
+  beforeRouteEnter(to, from, next) {
+    if (store.getters.isAuthenticated) {
+      store
+        .dispatch(USER_REQUEST)
+        .then(() => {
+          next();
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  },
 };
 </script>
 
 <style scoped>
-#container {
+
+#chart-container {
+  /* max-width: 120rem; */
   margin: 0 auto;
+  margin-top: 20px;
   padding: 0 20px;
   width: 100%;
   box-sizing: border-box;
 }
 
-#charts {
-  max-width: 90rem;
-  margin: 0 auto;
-  padding: 0 20px;
-  width: 100%;
-  box-sizing: border-box;
-}
+
 </style>

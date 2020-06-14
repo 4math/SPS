@@ -1,11 +1,13 @@
 <template>
   <div id="chart">
     <b-card id="container">
-      <LineChart ref="chart" :chart-data="dataCollection" :options="options" />
+      <LineChart
+        id="line-chart"
+        ref="chart"
+        :chart-data="dataCollection"
+        :options="options"
+      />
 
-      <b-button id="add-data" @click="addDataBtn()">
-        Add Data
-      </b-button>
       <b-dropdown
         id="dropdown-right"
         right
@@ -29,6 +31,7 @@
 
 <script>
 import LineChart from "./LineChart.js";
+import { mapGetters } from "vuex";
 
 export default {
   name: "ChartComponent",
@@ -45,7 +48,7 @@ export default {
           xAxes: [{}],
         },
         animation: {
-          duration: 200,
+          duration: 0,
         },
         tooltips: {
           // backgroundColor: "#4F5565", // greyish
@@ -55,7 +58,7 @@ export default {
           bodyFontFamily: "'Proxima Nova', sans-serif",
           cornerRadius: 3,
           // bodyFontColor: '#20C4C8', //neon
-          bodyFontColor: '#87FF65',
+          bodyFontColor: "#87FF65",
           bodyFontSize: 14,
           xPadding: 14,
           yPadding: 14,
@@ -72,37 +75,58 @@ export default {
               return `⚡ Consumed power: ${currentValue.toLocaleString()}`;
             },
           },
-          
         },
+        legend: {},
       },
     };
   },
-  computed: {},
+  computed: {
+    ...mapGetters(["getSockets"]),
+  },
   mounted() {
     this.fillData();
   },
   methods: {
     fillData() {
+      const datasets = this.getSockets.map((item) => {
+        return {
+          fill: true,
+          label: item.name,
+          id: parseInt(item.unique_id),
+          backgroundColor: item.id % 2 == 0 ?  [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ] : [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+          data: [],
+        };
+      });
+
       this.dataCollection = {
-        labels: new Array(3)
-          .fill(null)
-          .map(() => this.getTime())
-          .sort((a, b) => {
-            if (a > b) {
-              return 1;
-            }
-            if (b > a) {
-              return -1;
-            }
-            return 0;
-          }),
-        datasets: [
-          {
-            label: "Consumed power",
-            backgroundColor: "#f87979",
-            data: new Array(3).fill(null).map(() => this.getRandomInt()),
-          },
-        ],
+        labels: [],
+        datasets: datasets,
+        // [
+        // {
+        //   fill: true,
+        //   label: "Consumed power",
+        //   backgroundColor: "#f0f0f0",
+        //   // pointBackgroundColor: "#0062ff",
+        //   // pointHoverBorderColor: "#0062ff",
+        //   // pointHoverBackgroundColor: "#0062ff",
+        //   borderColor: "#f87979",
+        //   data: [],
+        // },
+        // ],
       };
     },
     getRandomInt() {
@@ -112,16 +136,14 @@ export default {
       const date = new Date();
       return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     },
-    addDataBtn() {
-      this.dataCollection.labels.push(this.getTime());
-      this.dataCollection.datasets[0].data.push(this.getRandomInt());
+    addData(data, id) {
+      const time = this.getTime();
+      this.dataCollection.labels.push(time);
+      console.log(this.dataCollection.datasets.find(socket => socket.id === id));
+      this.dataCollection.datasets.find(socket => socket.id === id).data.push({x: time, y: data});
+      // this.dataCollection.datasets[0].data.push(data);
       this.$refs.chart.renderChart(this.dataCollection, this.options);
     },
-    addData(data) {
-      this.dataCollection.labels.push(this.getTime());
-      this.dataCollection.datasets[0].data.push(data);
-      this.$refs.chart.renderChart(this.dataCollection, this.options);
-    }
   },
 };
 </script>
@@ -131,16 +153,30 @@ export default {
   margin: 0 auto;
   padding: 0 20px;
   width: 100%;
+  height: 100%;
   box-sizing: border-box;
   padding: 5px;
   position: relative;
 }
 
+#line-chart {
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+
+.card-body {
+  padding-bottom: 2.5em;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+
 #chart {
-  max-width: 90rem;
   margin: 0 auto;
   padding: 0 20px;
   width: 100%;
+  height: calc(100% - 82px);
+  display: block;
   box-sizing: border-box;
 }
 
