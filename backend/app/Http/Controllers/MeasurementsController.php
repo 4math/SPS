@@ -52,7 +52,7 @@ class MeasurementsController extends Controller
             'port' => 6379,
             'persistent' => true,
         ]);
-        $redis->publish('test', json_encode(['event' => 'messages.new', 'data' => $request->power, 'userId' => $socket->user_id, 'socketId' => $socket->unique_id]));
+        $redis->publish('test', json_encode(['event' => 'messages.new', 'data' => $request->power, 'userId' => $socket->user_id, 'socketId' => $socket->unique_id, 'timestamp' => $measurement->created_at]));
 
         return response()->json(['state' => $socket->switch_state], Response::HTTP_OK);
     }

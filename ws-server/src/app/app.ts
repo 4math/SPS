@@ -49,9 +49,8 @@ socket.sockets.on("connection", (socket) => {
   console.log(users);
   if (!users[userId]) {
     users[userId] = [];
-  } 
+  }
   users[userId].push(socket);
-  
 
   socket.on("subscribe-to-channel", function (data) {
     logger.info("SUBSCRIBE TO CHANNEL " + data);
@@ -78,6 +77,7 @@ interface IPayload {
   data: string;
   userId: number;
   socketId: number;
+  timestamp: string;
 }
 
 // Handle messages from channels we're subscribed to
@@ -90,7 +90,11 @@ sub.on("message", (channel, message) => {
     // (i.e. server room, usually being just the one user)
     // socket.sockets.in(channel).emit(payload.event, payload.data, payload.userId);
     users[payload.userId].forEach((socket) => {
-      socket.emit(payload.event, [payload.data, payload.socketId]);
+      socket.emit(payload.event, {
+        data: payload.data,
+        socketId: payload.socketId,
+        timestamp: payload.timestamp
+      });
     });
     // users[payload.userId].emit(payload.event, [payload.data, payload.socketId]);
   } catch (err) {

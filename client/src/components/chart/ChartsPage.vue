@@ -39,7 +39,7 @@ export default {
 
       socket.on("messages.new", (data) => {
         console.log("NEW PRIVATE MESSAGE", data);
-        this.$refs.chart.addData(data[0], parseInt(data[1]));  
+        this.$refs.chart.addData(data.data, parseInt(data.socketId), data.timestamp);  
       });
 
       socket.on("disconnect", function() {
@@ -79,6 +79,7 @@ export default {
   padding: 0 20px;
   width: 100%;
   box-sizing: border-box;
+  height: 100% !important;
 }
 
 
