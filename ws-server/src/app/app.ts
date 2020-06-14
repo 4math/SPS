@@ -2,7 +2,7 @@ import express from "express";
 import http from "http";
 import redis from "redis";
 import * as dotenv from "dotenv";
-import io, { Socket } from "socket.io";
+import io from "socket.io";
 import Logger from "./../utils/logger";
 
 dotenv.config();
@@ -37,16 +37,21 @@ sub.on("subscribe", function (channel, count) {
 });
 
 interface IUsers {
-  [key: number]: io.Socket;
+  [key: number]: io.Socket[];
 }
 
 const users: IUsers = {};
 
-socket.sockets.on("connection", function (socket) {
+socket.sockets.on("connection", (socket) => {
   logger.info("NEW CLIENT CONNECTED");
 
   const userId: number = socket.handshake.query.userid as number;
-  users[userId] = socket;
+  console.log(users);
+  if (!users[userId]) {
+    users[userId] = [];
+  } 
+  users[userId].push(socket);
+  
 
   socket.on("subscribe-to-channel", function (data) {
     logger.info("SUBSCRIBE TO CHANNEL " + data);
@@ -60,8 +65,11 @@ socket.sockets.on("connection", function (socket) {
     socket.join(data.channel);
   });
 
-  socket.on("disconnect", function () {
+  socket.on("disconnect", () => {
     logger.info("DISCONNECT");
+    const index: number = users[userId].indexOf(socket);
+    users[userId].splice(index, 1);
+    console.log(users);
   });
 });
 
@@ -81,7 +89,10 @@ sub.on("message", (channel, message) => {
     // Send the data through to any client in the channel room (!)
     // (i.e. server room, usually being just the one user)
     // socket.sockets.in(channel).emit(payload.event, payload.data, payload.userId);
-    users[payload.userId].emit(payload.event, [payload.data, payload.socketId]);
+    users[payload.userId].forEach((socket) => {
+      socket.emit(payload.event, [payload.data, payload.socketId]);
+    });
+    // users[payload.userId].emit(payload.event, [payload.data, payload.socketId]);
   } catch (err) {
     logger.error("Couldn't parse: " + err);
   }
