@@ -32,6 +32,8 @@
 <script>
 import LineChart from "./LineChart.js";
 import { mapGetters } from "vuex";
+import { MAX_DATA_SET_LENGTH } from "@/consts";
+import Colors from "@/objects/Colors";
 
 export default {
   name: "ChartComponent",
@@ -63,20 +65,22 @@ export default {
           xPadding: 14,
           yPadding: 14,
           displayColors: false,
-          mode: "index",
+          // mode: "index",
           intersect: false,
           callbacks: {
-            title: (tooltipItem) => {
-              return `🕒 ${tooltipItem[0].xLabel}`;
+            title: (tooltipItem, data) => {
+              let dataset = data.datasets[tooltipItem[0].datasetIndex];
+              let currentValue = dataset.data[tooltipItem[0].index];
+              console.log(tooltipItem);
+              return `${this.getSockets[tooltipItem[0].datasetIndex].name}\n🕒 ${currentValue.x.toLocaleString()}`;
             },
             label: (tooltipItem, data) => {
               let dataset = data.datasets[tooltipItem.datasetIndex];
               let currentValue = dataset.data[tooltipItem.index];
-              return `⚡ Consumed power: ${currentValue.toLocaleString()}`;
+              return `⚡ Consumed power: ${currentValue.y.toLocaleString()}`;
             },
           },
         },
-        legend: {},
       },
     };
   },
@@ -85,29 +89,16 @@ export default {
   },
   mounted() {
     this.fillData();
+    this.$refs.chart.renderChart(this.dataCollection, this.options);
   },
   methods: {
     fillData() {
-      const datasets = this.getSockets.map((item) => {
+      const datasets = this.getSockets.map((item, index) => {
         return {
           fill: true,
           label: item.name,
           id: parseInt(item.unique_id),
-          backgroundColor: item.id % 2 == 0 ?  [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ] : [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
+          backgroundColor: Colors[index],
           data: [],
         };
       });
@@ -136,13 +127,43 @@ export default {
       const date = new Date();
       return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     },
-    addData(data, id) {
-      const time = this.getTime();
-      this.dataCollection.labels.push(time);
-      console.log(this.dataCollection.datasets.find(socket => socket.id === id));
-      this.dataCollection.datasets.find(socket => socket.id === id).data.push({x: time, y: data});
-      // this.dataCollection.datasets[0].data.push(data);
-      this.$refs.chart.renderChart(this.dataCollection, this.options);
+
+    addData(data, id, timestamp) {
+      const datasets = this.dataCollection.datasets;
+      const labels = this.dataCollection.labels;
+
+      // 2020-06-14T12:38:12.000000Z - slicing off year-month-day and dot precision
+      const time = timestamp.slice(11).slice(0, 8);
+      labels.push(time);
+
+      datasets
+        .find((socket) => socket.id === id)
+        .data.push({ x: time, y: data });
+
+      this.checkMaxLength(datasets, labels);
+
+      const chart = this.$refs.chart.$data._chart;
+      // this.$refs.chart.renderChart(this.dataCollection, this.options);
+      chart.update();
+    },
+
+    checkMaxLength(datasets, labels) {
+      const lengths = datasets.map((socket) => {
+        return { id: socket.id, len: socket.data.length };
+      });
+
+      let didRemove = false;
+
+      for (let length of lengths) {
+        if (length.len > MAX_DATA_SET_LENGTH) {
+          datasets.find((socket) => socket.id === length.id).data.shift();
+          didRemove = true;
+        }
+      }
+
+      if (didRemove) {
+        labels.shift();
+      }
     },
   },
 };
