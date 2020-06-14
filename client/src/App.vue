@@ -3,7 +3,7 @@
     <Navigator />
     <Loading :active.sync="isLoading" />
     <!-- <Loading :isLoading=true /> -->
-    <div class="main-container">
+    <div id="app-container">
       <router-view />
     </div>
   </div>
@@ -39,7 +39,7 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 0 !important;
-  height: calc(100% - 102px);
+  height: calc(100% - 102px) !important;
 }
 
 html, body {
@@ -48,7 +48,7 @@ html, body {
   margin: 0;
 }
 
-#main-container {
-  height: 100%;
+#app-container {
+  height: 100% !important;
 }
 </style>

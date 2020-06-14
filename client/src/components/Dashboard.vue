@@ -143,6 +143,7 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  height: calc(100% - 102px) !important;
 }
 
 #add-device {
