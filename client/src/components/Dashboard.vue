@@ -84,6 +84,7 @@ export default {
           unique_id: socketID,
         });
         this.sockets.push(new SocketData(data));
+        this.makeToast(`${data.name} has been added`, "success");
       } catch (err) {
         for (let e in err.errors) {
           this.makeToast(err.errors[e][0]);
@@ -103,6 +104,7 @@ export default {
           (socket) => socket.id === this.idToDelete
         );
         this.sockets.splice(index, 1);
+        this.makeToast(`Socket has been successfully deleted`, "success");
       } catch (err) {
         console.error(err);
       }
@@ -111,7 +113,7 @@ export default {
     makeToast(message, variant = "danger") {
       this.$bvToast.toast(message, {
         title: "SPS message",
-        toaster: "b-toaster-top-left",
+        toaster: "b-toaster-bottom-right",
         autoHideDelay: 8000,
         appendToast: true,
         variant: variant,
