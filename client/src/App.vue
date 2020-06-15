@@ -43,7 +43,7 @@ export default {
 }
 
 html, body {
-  height: 100% !important;
+  height: calc(100% - 102px) !important;
   width: 100%;
   margin: 0;
 }
