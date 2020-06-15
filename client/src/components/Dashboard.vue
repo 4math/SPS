@@ -3,11 +3,13 @@
     <h1>Welcome to the dashboard, {{ getProfile.name }}!</h1>
     <Socket
       v-for="socket in sockets"
-      :key="socket.id"
+      :id="parseInt(socket.unique_id, 10)"
+      :key="parseInt(socket.unique_id, 10)"
       v-bind="socket"
       :title="socket.name"
       :description="socket.description"
       :state="socket.switch_state"
+      :momentum-value="socket.momentumValue"
       @put="put"
       @commitDeletion="commitDeletion"
     />
@@ -37,6 +39,7 @@ import Socket from "@/components/Socket.vue";
 import DeviceRegister from "@/components/DeviceRegister.vue";
 import Confirm from "@/components/Confirm.vue";
 import SocketData from "@/objects/Socket.js";
+import io from "socket.io-client";
 
 export default {
   name: "Dashboard",
@@ -51,10 +54,44 @@ export default {
       showModal: false,
       showConfirm: false,
       idToDelete: -1,
+      // momentumValue: -1,
     };
   },
   computed: {
     ...mapGetters(["getProfile"]),
+  },
+  mounted() {
+    // eslint-disable-next-line no-undef
+    this.socket = io.connect(process.env.VUE_APP_WS_URL, {
+      transports: ["websocket"],
+      upgrade: false,
+      query: `userid=${this.getProfile.id}`,
+    });
+
+    this.socket.on("connect", () => {
+      console.log("CONNECTED");
+
+      this.socket.on("messages.new", (data) => {
+        console.log("NEW PRIVATE MESSAGE", data);
+        if (this.sockets.length !== 0) {
+          this.sockets.find(
+            (socket) =>
+              parseInt(socket.unique_id, 10) === parseInt(data.socketId, 10)
+          ).momentumValue = data.data < 0 ? -1 : data.data;
+        }
+      });
+
+      this.socket.on("disconnect", () => {
+        console.log("DISCONNECTING");
+        this.socket.disconnect();
+      });
+
+      // Kick it off
+      // Can be any channel. For private channels, Laravel should pass it upon page load (or given by another user).
+      // eslint-disable-next-line no-undef
+      const channel = process.env.VUE_APP_WS_REDIS_CHANNEL;
+      this.socket.emit("subscribe-to-channel", { channel: channel });
+    });
   },
   created() {
     this.axios
@@ -131,6 +168,10 @@ export default {
           console.error(err);
         });
     }
+  },
+  beforeRouteLeave: function(to, from, next) {
+    this.socket.emit("disconnect");
+    next();
   },
 };
 </script>

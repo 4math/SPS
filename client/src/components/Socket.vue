@@ -25,6 +25,10 @@
         </b-input-group-prepend>
       </b-input-group>
 
+      <b-card-text class="text">
+        Last Power value: {{ momentumValue !== -1 ? momentumValue : "-" }} W
+      </b-card-text>
+
       <b-dropdown id="actions" text="Actions" class="lg" menu-class="w-100">
         <b-dropdown-item-button @click="showChartsPage">
           Show the chart
@@ -38,9 +42,7 @@
 </template>
 
 <script>
-
 import router from "@/router/router";
-
 
 export default {
   name: "Socket",
@@ -59,6 +61,10 @@ export default {
     },
     state: {
       type: Boolean,
+      required: true,
+    },
+    momentumValue: {
+      type: Number,
       required: true,
     },
   },
@@ -80,8 +86,8 @@ export default {
       this.$emit("commitDeletion", this.id);
     },
     showChartsPage() {
-      router.push("/charts");
-    }
+      router.push(`charts/${this.id}`);
+    },
   },
 };
 </script>
@@ -111,6 +117,11 @@ export default {
 label {
   display: inline-block !important;
   padding: 1em;
+}
+
+.text {
+  font-size: 1.2em;
+  text-align: center;
 }
 
 #actions {
