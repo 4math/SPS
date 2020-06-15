@@ -17,61 +17,74 @@ export default {
     ChartComponent,
   },
   data() {
-    return {};
+    return {
+      socket: null,
+    };
   },
   computed: {
     ...mapGetters(["getProfile"]),
   },
   mounted() {
     // eslint-disable-next-line no-undef
-    const socket = io.connect(process.env.VUE_APP_WS_URL, {
+    this.socket = io.connect(process.env.VUE_APP_WS_URL, {
       transports: ["websocket"],
       upgrade: false,
       query: `userid=${this.getProfile.id}`,
     });
 
-    socket.on("connect", () => {
-      console.log("CONNECT");
+    this.socket.on("connect", () => {
+      console.log("CONNECTED");
 
-      socket.on("event", function(data) {
+      this.socket.on("event", (data) => {
         console.log("EVENT", data);
       });
 
-      socket.on("messages.new", (data) => {
+      this.socket.on("messages.new", (data) => {
         console.log("NEW PRIVATE MESSAGE", data);
-        this.$refs.chart.addData(data.data, parseInt(data.socketId), data.timestamp);  
+        this.$refs.chart.addData(
+          data.data,
+          parseInt(data.socketId),
+          data.timestamp
+        );
       });
 
-      socket.on("disconnect", function() {
-        console.log("disconnect");
+      this.socket.on("disconnect", () => {
+        console.log("DISCONNECTING");
+        this.socket.disconnect();
       });
 
       // Kick it off
       // Can be any channel. For private channels, Laravel should pass it upon page load (or given by another user).
       const channel = "test";
 
-      socket.emit("subscribe-to-channel", { channel: channel });
+      this.socket.emit("subscribe-to-channel", { channel: channel });
       console.log(`SUBSCRIBED TO <${channel}>`);
     });
   },
   methods: {},
-  beforeRouteEnter(to, from, next) {
+  beforeRouteEnter: function(to, from, next) {
     if (store.getters.isAuthenticated) {
       store
         .dispatch(USER_REQUEST)
         .then(() => {
-          next();
+          next(vm => {
+            // Runs after page is loaded
+            vm.$refs.chart.turnOffSpecificGraphs();
+          });
         })
         .catch((err) => {
           console.error(err);
         });
     }
   },
+  beforeRouteLeave: function(to, from, next) {
+    this.socket.emit("disconnect");
+    next();
+  },
 };
 </script>
 
 <style scoped>
-
 #chart-container {
   /* max-width: 120rem; */
   margin: 0 auto;
@@ -81,6 +94,4 @@ export default {
   box-sizing: border-box;
   height: 100% !important;
 }
-
-
 </style>
