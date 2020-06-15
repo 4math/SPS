@@ -76,6 +76,15 @@ const router = new Router({
       },
       beforeEnter: ifAuth,
     },
+    {
+      path: "/charts/:id",
+      name: "ChartsPage",
+      component: ChartsPage,
+      meta: {
+        auth: true,
+      },
+      beforeEnter: ifAuth,
+    },
   ],
 });
 
