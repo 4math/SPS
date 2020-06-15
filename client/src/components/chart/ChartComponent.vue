@@ -71,14 +71,21 @@ export default {
             title: (tooltipItem, data) => {
               let dataset = data.datasets[tooltipItem[0].datasetIndex];
               let currentValue = dataset.data[tooltipItem[0].index];
-              console.log(tooltipItem);
-              return `${this.getSockets[tooltipItem[0].datasetIndex].name}\n🕒 ${currentValue.x.toLocaleString()}`;
+              return `${
+                this.getSockets[tooltipItem[0].datasetIndex].name
+              }\n\n🕒 ${currentValue.x.toLocaleString()}`;
             },
             label: (tooltipItem, data) => {
               let dataset = data.datasets[tooltipItem.datasetIndex];
               let currentValue = dataset.data[tooltipItem.index];
               return `⚡ Consumed power: ${currentValue.y.toLocaleString()}`;
             },
+          },
+        },
+        legend: {
+          labels: {
+            fontFamily: "sans-serif",
+            fontSize: 18,
           },
         },
       },
@@ -98,7 +105,11 @@ export default {
           fill: true,
           label: item.name,
           id: parseInt(item.unique_id),
-          backgroundColor: Colors[index],
+          // adding opacity to the hex color. 70 is about 44% opacity
+          backgroundColor: Colors[index] + "70",
+          pointHoverBackgroundColor: Colors[index] + "CC",
+          borderColor: Colors[index],
+          pointHoverBorderColor: "#0062ff",
           data: [],
         };
       });
@@ -165,6 +176,23 @@ export default {
         labels.shift();
       }
     },
+    turnOffSpecificGraphs() {
+      const chart = this.$refs.chart.$data._chart;
+      const id = this.$route.params.id;
+      if (id) {
+        const datasets = chart.data.datasets;
+        const element = datasets.find(
+          (socket) => socket.id === parseInt(id, 10)
+        );
+        const index = datasets.indexOf(element);
+        for (let i = 0; i < datasets.length; i++) {
+          if (i !== index) {
+            chart.getDatasetMeta(i).hidden = true;
+          }
+        }
+        chart.update();
+      }
+    },
   },
 };
 </script>
@@ -174,7 +202,7 @@ export default {
   margin: 0 auto;
   padding: 0 20px;
   width: 100%;
-  height: 100%;
+  height: 100% !important;
   box-sizing: border-box;
   padding: 5px;
   position: relative;
@@ -196,7 +224,7 @@ export default {
   margin: 0 auto;
   padding: 0 20px;
   width: 100%;
-  height: calc(100% - 82px);
+  height: 100% !important;
   display: block;
   box-sizing: border-box;
 }
