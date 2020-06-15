@@ -33,7 +33,7 @@ sub.on("error", function (error) {
 });
 
 sub.on("subscribe", function (channel, count) {
-  logger.info(`SUBSCRIBE, ${channel}, ${count}`);
+  logger.info(`SUBSCRIBED, ${channel}, ${count}`);
 });
 
 interface IUsers {
@@ -43,8 +43,6 @@ interface IUsers {
 const users: IUsers = {};
 
 socket.sockets.on("connection", (socket) => {
-  logger.info("NEW CLIENT CONNECTED");
-
   const userId: number = socket.handshake.query.userid as number;
   console.log(users);
   if (!users[userId]) {
@@ -52,8 +50,10 @@ socket.sockets.on("connection", (socket) => {
   }
   users[userId].push(socket);
 
+  logger.info(`NEW CLIENT CONNECTED: ${userId}`);
+
   socket.on("subscribe-to-channel", function (data) {
-    logger.info("SUBSCRIBE TO CHANNEL " + data);
+    logger.info(`SUBSCRIBE TO CHANNEL ${data}`);
 
     // Subscribe to the Redis channel using our global subscriber
     sub.subscribe(data.channel);
@@ -65,7 +65,7 @@ socket.sockets.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    logger.info("DISCONNECT");
+    logger.info(`DISCONNECT FOR USER_ID: ${userId}`);
     const index: number = users[userId].indexOf(socket);
     users[userId].splice(index, 1);
     console.log(users);
@@ -86,23 +86,23 @@ sub.on("message", (channel, message) => {
 
   try {
     const payload: IPayload = JSON.parse(message);
-    // Send the data through to any client in the channel room (!)
-    // (i.e. server room, usually being just the one user)
-    // socket.sockets.in(channel).emit(payload.event, payload.data, payload.userId);
+    
     users[payload.userId].forEach((socket) => {
       socket.emit(payload.event, {
         data: payload.data,
         socketId: payload.socketId,
-        timestamp: payload.timestamp
+        timestamp: payload.timestamp,
       });
     });
-    // users[payload.userId].emit(payload.event, [payload.data, payload.socketId]);
+    // Send the data through to any client in the channel room (!)
+    // (i.e. server room, usually being just the one user)
+    // socket.sockets.in(channel).emit(payload.event, payload.data, payload.userId);
   } catch (err) {
     logger.error("Couldn't parse: " + err);
   }
 });
 
-const port: string = process.env.PORT;
+const port: number = parseInt(process.env.PORT, 10);
 
 server.listen(port, () => {
   logger.info(`server is listening on ${port}`);
