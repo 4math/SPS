@@ -129,6 +129,28 @@ class SocketsController extends Controller
         return response($socket->jsonSerialize(), Response::HTTP_OK);
     }
 
+    public function updateInfo(Request $request)
+    {
+
+        try {
+            $socket = Socket::findOrFail($request->id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+
+        if ($socket->user->id != Auth::id()) {
+            return response(null, Response::HTTP_FORBIDDEN);
+        }
+
+        $socket->name = $request->name;
+        $socket->description = $request->description;
+        $socket->save();
+        return response($socket->jsonSerialize(), Response::HTTP_OK);
+    }
+
     public function delete($id)
     {
         // if(Socket::all()->where('user_id', Auth::id())->where('id', $id) != '[]'){

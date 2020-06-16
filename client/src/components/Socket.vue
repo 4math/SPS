@@ -1,7 +1,7 @@
 <template>
   <div id="socket-card">
     <b-card
-      :title="title"
+      :title="name"
       :img-src="image"
       img-alt="Image"
       img-top
@@ -33,7 +33,10 @@
         <b-dropdown-item-button @click="showChartsPage">
           Show the chart
         </b-dropdown-item-button>
-        <b-dropdown-item-button variant="danger" @click="commit">
+        <b-dropdown-item-button @click="commitEdit">
+          Edit Socket's information
+        </b-dropdown-item-button>
+        <b-dropdown-item-button variant="danger" @click="commitDeletion">
           Delete Socket
         </b-dropdown-item-button>
       </b-dropdown>
@@ -51,7 +54,11 @@ export default {
       type: Number,
       required: true,
     },
-    title: {
+    uniqueId: {
+      type: Number,
+      required: true,
+    },
+    name: {
       type: String,
       required: true,
     },
@@ -82,11 +89,14 @@ export default {
     put(value) {
       this.$emit("put", this.id, value);
     },
-    commit() {
+    commitEdit() {
+      this.$emit("commitEdit", this.id, this.name, this.description);
+    },
+    commitDeletion() {
       this.$emit("commitDeletion", this.id);
     },
     showChartsPage() {
-      router.push(`charts/${this.id}`);
+      router.push(`charts/${this.uniqueId}`);
     },
   },
 };

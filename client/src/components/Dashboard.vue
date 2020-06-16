@@ -3,30 +3,44 @@
     <h1>Welcome to the dashboard, {{ getProfile.name }}!</h1>
     <Socket
       v-for="socket in sockets"
-      :id="parseInt(socket.unique_id, 10)"
+      :id="socket.id"
       :key="parseInt(socket.unique_id, 10)"
+      :unique-id="parseInt(socket.unique_id, 10)"
       v-bind="socket"
-      :title="socket.name"
+      :name="socket.name"
       :description="socket.description"
       :state="socket.switch_state"
       :momentum-value="socket.momentumValue"
       @put="put"
       @commitDeletion="commitDeletion"
+      @commitEdit="commitEdit"
     />
 
-    <b-button id="add-device" variant="primary" @click="showModal = !showModal">
+    <b-button
+      id="add-device"
+      variant="primary"
+      @click="showSocketRegisterModal = !showSocketRegisterModal"
+    >
       +
     </b-button>
 
-    <DeviceRegister
-      :show="showModal"
-      @closeModal="showModal = !showModal"
+    <SocketRegister
+      :show-socket-register="showSocketRegisterModal"
+      @closeModal="showSocketRegisterModal = !showSocketRegisterModal"
       @registerSocket="registerSocket"
     />
     <Confirm
       :show-confirm="showConfirm"
       @closeConfirm="showConfirm = !showConfirm"
       @confirm="confirmToDelete"
+    />
+
+    <SocketUpdateInfo
+      :show-socket-update-info="showSocketUpdateInfoModal"
+      :given-name="nameToUpdate"
+      :given-description="descToUpdate"
+      @closeModal="showSocketUpdateInfoModal = !showSocketUpdateInfoModal"
+      @socketUpdateInfo="confirmToUpdate"
     />
   </div>
 </template>
@@ -36,8 +50,9 @@ import { mapGetters } from "vuex";
 import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
 import Socket from "@/components/Socket.vue";
-import DeviceRegister from "@/components/DeviceRegister.vue";
-import Confirm from "@/components/Confirm.vue";
+import SocketRegister from "@/components/modals/SocketRegister.vue";
+import Confirm from "@/components/modals/Confirm.vue";
+import SocketUpdateInfo from "@/components/modals/SocketUpdateInfo.vue";
 import SocketData from "@/objects/Socket.js";
 import io from "socket.io-client";
 
@@ -45,16 +60,20 @@ export default {
   name: "Dashboard",
   components: {
     Socket,
-    DeviceRegister,
+    SocketRegister,
     Confirm,
+    SocketUpdateInfo,
   },
   data() {
     return {
       sockets: [],
-      showModal: false,
+      showSocketRegisterModal: false,
+      showSocketUpdateInfoModal: false,
       showConfirm: false,
       idToDelete: -1,
-      // momentumValue: -1,
+      nameToUpdate: "",
+      descToUpdate: "",
+      idToUpdate: -1,
     };
   },
   computed: {
@@ -141,9 +160,42 @@ export default {
           (socket) => socket.id === this.idToDelete
         );
         this.sockets.splice(index, 1);
-        this.makeToast(`Socket has been successfully deleted`, "success");
+        this.makeToast(`Socket has successfully been deleted`, "success");
       } catch (err) {
         console.error(err);
+        this.makeToast(`An error occured during the deletion process`);
+      }
+    },
+
+    commitEdit(id, name, description) {
+      this.showSocketUpdateInfoModal = true;
+      this.idToUpdate = id;
+      this.nameToUpdate = name;
+      this.descToUpdate = description;
+    },
+
+    async confirmToUpdate(name, description) {
+      try {
+        const { data } = await this.axios.put(
+          `/sockets/update-info/${this.idToUpdate}`,
+          {
+            name: name,
+            description: description,
+          }
+        );
+        console.log(data);
+        const socket = this.sockets.find(
+          (socket) => socket.id === this.idToUpdate
+        );
+        socket.name = name;
+        socket.description = description;
+        this.makeToast(
+          `Socket's information has successfully been updated`,
+          "success"
+        );
+      } catch (err) {
+        console.error(err);
+        this.makeToast(`An error occured during the update process`);
       }
     },
 
