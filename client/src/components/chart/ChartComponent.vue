@@ -50,7 +50,7 @@ export default {
           xAxes: [{}],
         },
         animation: {
-          duration: 0,
+          duration: 200,
         },
         tooltips: {
           // backgroundColor: "#4F5565", // greyish

@@ -25,7 +25,6 @@ export default {
     ...mapGetters(["getProfile"]),
   },
   mounted() {
-    // eslint-disable-next-line no-undef
     this.socket = io.connect(process.env.VUE_APP_WS_URL, {
       transports: ["websocket"],
       upgrade: false,
