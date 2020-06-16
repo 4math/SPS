@@ -1,0 +1,1 @@
+export const MAX_DATA_SET_LENGTH = 20;

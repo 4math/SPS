@@ -35,6 +35,7 @@ Route::prefix('sockets')->group(function (){
 		Route::put('connect', 'SocketsController@connect');
 		Route::get('list', 'SocketsController@list');
 		Route::get('show/{id}', 'SocketsController@show');
+		Route::put('update-info/{id}', 'SocketsController@updateInfo');
 		Route::put('{id}', 'SocketsController@put');
 		Route::delete('{id}', 'SocketsController@delete');
 	});
@@ -47,4 +48,10 @@ Route::prefix('measurements')->group(function (){
 		Route::get('list/{socket_id}', 'MeasurementsController@list');
 		Route::delete('{id}', 'MeasurementsController@delete');
 	});
+});
+
+
+Route::get('/fire', function() {
+	event(new App\Events\WebSocketPublish());
+	echo "Published";
 });

@@ -60,10 +60,10 @@
 import { required } from "vuelidate/lib/validators";
 import { validationMixin } from 'vuelidate'
 export default {
-  name: "DeviceRegister",
+  name: "SocketRegister",
   mixins: [validationMixin],
   props: {
-    show: {
+    showSocketRegister: {
       type: Boolean,
       required: true,
       default: false,
@@ -94,7 +94,7 @@ export default {
   computed: {
     showValue: {
       get() {
-        return this.show;
+        return this.showSocketRegister;
       },
       set(value) {
         this.$emit("closeModal", value);

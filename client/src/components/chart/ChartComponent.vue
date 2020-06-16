@@ -1,11 +1,13 @@
 <template>
   <div id="chart">
     <b-card id="container">
-      <LineChart ref="chart" :chart-data="dataCollection" :options="options" />
+      <LineChart
+        id="line-chart"
+        ref="chart"
+        :chart-data="dataCollection"
+        :options="options"
+      />
 
-      <b-button id="add-data" @click="addData()">
-        Add Data
-      </b-button>
       <b-dropdown
         id="dropdown-right"
         right
@@ -29,6 +31,9 @@
 
 <script>
 import LineChart from "./LineChart.js";
+import { mapGetters } from "vuex";
+import { MAX_DATA_SET_LENGTH } from "@/consts";
+import Colors from "@/objects/Colors";
 
 export default {
   name: "ChartComponent",
@@ -55,54 +60,75 @@ export default {
           bodyFontFamily: "'Proxima Nova', sans-serif",
           cornerRadius: 3,
           // bodyFontColor: '#20C4C8', //neon
-          bodyFontColor: '#87FF65',
+          bodyFontColor: "#87FF65",
           bodyFontSize: 14,
           xPadding: 14,
           yPadding: 14,
           displayColors: false,
-          mode: "index",
+          // mode: "index",
           intersect: false,
           callbacks: {
-            title: (tooltipItem) => {
-              return `🕒 ${tooltipItem[0].xLabel}`;
+            title: (tooltipItem, data) => {
+              let dataset = data.datasets[tooltipItem[0].datasetIndex];
+              let currentValue = dataset.data[tooltipItem[0].index];
+              return `${
+                this.getSockets[tooltipItem[0].datasetIndex].name
+              }\n\n🕒 ${currentValue.x.toLocaleString()}`;
             },
             label: (tooltipItem, data) => {
               let dataset = data.datasets[tooltipItem.datasetIndex];
               let currentValue = dataset.data[tooltipItem.index];
-              return `⚡ Consumed power: ${currentValue.toLocaleString()}`;
+              return `⚡ Consumed power: ${currentValue.y.toLocaleString()}`;
             },
           },
-          
+        },
+        legend: {
+          labels: {
+            fontFamily: "sans-serif",
+            fontSize: 18,
+          },
         },
       },
     };
   },
-  computed: {},
+  computed: {
+    ...mapGetters(["getSockets"]),
+  },
   mounted() {
     this.fillData();
+    this.$refs.chart.renderChart(this.dataCollection, this.options);
   },
   methods: {
     fillData() {
+      const datasets = this.getSockets.map((item, index) => {
+        return {
+          fill: true,
+          label: item.name,
+          id: parseInt(item.unique_id),
+          // adding opacity to the hex color. 70 is about 44% opacity
+          backgroundColor: Colors[index] + "70",
+          pointHoverBackgroundColor: Colors[index] + "CC",
+          borderColor: Colors[index],
+          pointHoverBorderColor: "#0062ff",
+          data: [],
+        };
+      });
+
       this.dataCollection = {
-        labels: new Array(3)
-          .fill(null)
-          .map(() => this.getTime())
-          .sort((a, b) => {
-            if (a > b) {
-              return 1;
-            }
-            if (b > a) {
-              return -1;
-            }
-            return 0;
-          }),
-        datasets: [
-          {
-            label: "Consumed power",
-            backgroundColor: "#f87979",
-            data: new Array(3).fill(null).map(() => this.getRandomInt()),
-          },
-        ],
+        labels: [],
+        datasets: datasets,
+        // [
+        // {
+        //   fill: true,
+        //   label: "Consumed power",
+        //   backgroundColor: "#f0f0f0",
+        //   // pointBackgroundColor: "#0062ff",
+        //   // pointHoverBorderColor: "#0062ff",
+        //   // pointHoverBackgroundColor: "#0062ff",
+        //   borderColor: "#f87979",
+        //   data: [],
+        // },
+        // ],
       };
     },
     getRandomInt() {
@@ -112,10 +138,60 @@ export default {
       const date = new Date();
       return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
     },
-    addData() {
-      this.dataCollection.labels.push(this.getTime());
-      this.dataCollection.datasets[0].data.push(this.getRandomInt());
-      this.$refs.chart.renderChart(this.dataCollection, this.options);
+
+    addData(data, id, timestamp) {
+      const datasets = this.dataCollection.datasets;
+      const labels = this.dataCollection.labels;
+
+      // 2020-06-14T12:38:12.000000Z - slicing off year-month-day and dot precision
+      const time = timestamp.slice(11).slice(0, 8);
+      labels.push(time);
+
+      datasets
+        .find((socket) => socket.id === id)
+        .data.push({ x: time, y: data });
+
+      this.checkMaxLength(datasets, labels);
+
+      const chart = this.$refs.chart.$data._chart;
+      // this.$refs.chart.renderChart(this.dataCollection, this.options);
+      chart.update();
+    },
+
+    checkMaxLength(datasets, labels) {
+      const lengths = datasets.map((socket) => {
+        return { id: socket.id, len: socket.data.length };
+      });
+
+      let didRemove = false;
+
+      for (let length of lengths) {
+        if (length.len > MAX_DATA_SET_LENGTH) {
+          datasets.find((socket) => socket.id === length.id).data.shift();
+          didRemove = true;
+        }
+      }
+
+      if (didRemove) {
+        labels.shift();
+      }
+    },
+    turnOffSpecificGraphs() {
+      const chart = this.$refs.chart.$data._chart;
+      const id = this.$route.params.id;
+      if (id) {
+        const datasets = chart.data.datasets;
+        const element = datasets.find(
+          (socket) => socket.id === parseInt(id, 10)
+        );
+        const index = datasets.indexOf(element);
+        for (let i = 0; i < datasets.length; i++) {
+          if (i !== index) {
+            chart.getDatasetMeta(i).hidden = true;
+          }
+        }
+        chart.update();
+      }
     },
   },
 };
@@ -126,16 +202,30 @@ export default {
   margin: 0 auto;
   padding: 0 20px;
   width: 100%;
+  height: 100% !important;
   box-sizing: border-box;
   padding: 5px;
   position: relative;
 }
 
+#line-chart {
+  height: 100%;
+  width: 100%;
+  display: block;
+}
+
+.card-body {
+  padding-bottom: 2.5em;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+
 #chart {
-  max-width: 90rem;
   margin: 0 auto;
   padding: 0 20px;
   width: 100%;
+  height: 100% !important;
+  display: block;
   box-sizing: border-box;
 }
 
