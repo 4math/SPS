@@ -171,19 +171,15 @@ export default {
       this.showSocketUpdateInfoModal = true;
       this.idToUpdate = id;
       this.nameToUpdate = name;
-      this.descToUpdate = description;
+      this.descToUpdate = description ? description : "";
     },
 
     async confirmToUpdate(name, description) {
       try {
-        const { data } = await this.axios.put(
-          `/sockets/update-info/${this.idToUpdate}`,
-          {
-            name: name,
-            description: description,
-          }
-        );
-        console.log(data);
+        await this.axios.put(`/sockets/update-info/${this.idToUpdate}`, {
+          name: name,
+          description: description,
+        });
         const socket = this.sockets.find(
           (socket) => socket.id === this.idToUpdate
         );
