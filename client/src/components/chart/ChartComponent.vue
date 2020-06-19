@@ -33,7 +33,7 @@ export default {
     selected: {
       type: String,
       required: true,
-    }
+    },
   },
   data() {
     return {
@@ -101,28 +101,26 @@ export default {
 
       set(option) {
         this.$emit("onSelectedChange", option);
-      }
-    }
+      },
+    },
   },
   mounted() {
     this.clearChart();
   },
   methods: {
-
     fillData() {
-      const datasets = this.getSockets.map((item, index) => {
-        return {
-          fill: true,
-          label: item.name,
-          id: parseInt(item.unique_id),
-          // adding opacity to the hex color. 70 is about 44% opacity
-          backgroundColor: Colors[index] + "70",
-          pointHoverBackgroundColor: Colors[index] + "CC",
-          borderColor: Colors[index],
-          pointHoverBorderColor: "#0062ff",
-          data: [],
-        };
-      });
+      const datasets = this.getSockets.map((item, index) => ({
+        fill: true,
+        label: item.name,
+        id: parseInt(item.id),
+        unique_id: parseInt(item.unique_id),
+        // adding opacity to the hex color. 70 is about 44% opacity
+        backgroundColor: Colors[index] + "70",
+        pointHoverBackgroundColor: Colors[index] + "CC",
+        borderColor: Colors[index],
+        pointHoverBorderColor: "#0062ff",
+        data: [],
+      }));
 
       this.dataCollection = {
         labels: [],
@@ -135,7 +133,7 @@ export default {
       this.$refs.chart.renderChart(this.dataCollection, this.options);
     },
 
-    addData(data, id, timestamp) {
+    addData(unique_id, data, timestamp) {
       const datasets = this.dataCollection.datasets;
       const labels = this.dataCollection.labels;
 
@@ -144,10 +142,12 @@ export default {
       labels.push(time);
 
       datasets
-        .find((socket) => socket.id === id)
+        .find((socket) => socket.unique_id === unique_id)
         .data.push({ x: time, y: data });
 
-      this.checkMaxLength(datasets, labels);
+      if (this.internalSelected === SCALE_OPTIONS.REALTIME) {
+        this.checkMaxLength(datasets, labels);
+      }
 
       const chart = this.$refs.chart.$data._chart;
       // this.$refs.chart.renderChart(this.dataCollection, this.options);
@@ -155,15 +155,18 @@ export default {
     },
 
     checkMaxLength(datasets, labels) {
-      const lengths = datasets.map((socket) => {
-        return { id: socket.id, len: socket.data.length };
-      });
+      const lengths = datasets.map((socket) => ({
+        id: socket.unique_id,
+        len: socket.data.length,
+      }));
 
       let didRemove = false;
 
       for (let length of lengths) {
         if (length.len > MAX_DATA_SET_LENGTH) {
-          datasets.find((socket) => socket.id === length.id).data.shift();
+          datasets
+            .find((socket) => socket.unique_id === length.id)
+            .data.shift();
           didRemove = true;
         }
       }
@@ -178,7 +181,7 @@ export default {
       if (id) {
         const datasets = chart.data.datasets;
         const element = datasets.find(
-          (socket) => socket.id === parseInt(id, 10)
+          (socket) => socket.unique_id === parseInt(id, 10)
         );
         const index = datasets.indexOf(element);
         for (let i = 0; i < datasets.length; i++) {
