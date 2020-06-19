@@ -8,23 +8,12 @@
         :options="options"
       />
 
-      <b-dropdown
-        id="dropdown-right"
-        right
-        text="Scale"
-        variant="primary"
-        class="m-2"
-      >
-        <b-dropdown-item href="#">
-          1 Hour
-        </b-dropdown-item>
-        <b-dropdown-item href="#">
-          1 Day
-        </b-dropdown-item>
-        <b-dropdown-item href="#">
-          1 Week
-        </b-dropdown-item>
-      </b-dropdown>
+      <b-form-select
+        id="scale-select"
+        v-model="internalSelected"
+        :options="selectedOptions"
+        size="md"
+      />
     </b-card>
   </div>
 </template>
@@ -32,7 +21,7 @@
 <script>
 import LineChart from "./LineChart.js";
 import { mapGetters } from "vuex";
-import { MAX_DATA_SET_LENGTH } from "@/consts";
+import { MAX_DATA_SET_LENGTH, SCALE_OPTIONS } from "@/consts";
 import Colors from "@/objects/Colors";
 
 export default {
@@ -40,8 +29,20 @@ export default {
   components: {
     LineChart,
   },
+  props: {
+    selected: {
+      type: String,
+      required: true,
+    }
+  },
   data() {
     return {
+      selectedOptions: [
+        { value: SCALE_OPTIONS.REALTIME, text: "Scale: Real-time" },
+        { value: SCALE_OPTIONS.ONEHOUR, text: "Scale: 1 Hour" },
+        { value: SCALE_OPTIONS.ONEDAY, text: "Scale: 1 Day" },
+        { value: SCALE_OPTIONS.ONEWEEK, text: "Scale: 1 Week" },
+      ],
       dataCollection: {},
       options: {
         responsive: true,
@@ -93,12 +94,21 @@ export default {
   },
   computed: {
     ...mapGetters(["getSockets"]),
+    internalSelected: {
+      get() {
+        return this.selected;
+      },
+
+      set(option) {
+        this.$emit("onSelectedChange", option);
+      }
+    }
   },
   mounted() {
-    this.fillData();
-    this.$refs.chart.renderChart(this.dataCollection, this.options);
+    this.clearChart();
   },
   methods: {
+
     fillData() {
       const datasets = this.getSockets.map((item, index) => {
         return {
@@ -117,26 +127,12 @@ export default {
       this.dataCollection = {
         labels: [],
         datasets: datasets,
-        // [
-        // {
-        //   fill: true,
-        //   label: "Consumed power",
-        //   backgroundColor: "#f0f0f0",
-        //   // pointBackgroundColor: "#0062ff",
-        //   // pointHoverBorderColor: "#0062ff",
-        //   // pointHoverBackgroundColor: "#0062ff",
-        //   borderColor: "#f87979",
-        //   data: [],
-        // },
-        // ],
       };
     },
-    getRandomInt() {
-      return Math.floor(Math.random() * (50 - 5 + 1)) + 5;
-    },
-    getTime() {
-      const date = new Date();
-      return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+
+    clearChart() {
+      this.fillData();
+      this.$refs.chart.renderChart(this.dataCollection, this.options);
     },
 
     addData(data, id, timestamp) {
@@ -215,7 +211,7 @@ export default {
 }
 
 .card-body {
-  padding-bottom: 2.5em;
+  padding-bottom: 3.5rem;
   padding-right: 0.5rem;
   padding-left: 0.5rem;
 }
@@ -233,9 +229,15 @@ export default {
   margin: 5px;
 }
 
-#dropdown-right {
+#scale-select {
   position: absolute;
   bottom: 0;
   right: 0;
+  width: 20%;
+  margin: 5px;
+}
+
+#scale-select:hover {
+  cursor: pointer;
 }
 </style>

@@ -1,6 +1,10 @@
 <template>
   <div id="chart-container">
-    <ChartComponent ref="chart" />
+    <ChartComponent
+      ref="chart"
+      :selected="selected"
+      @onSelectedChange="(option) => (selected = option)"
+    />
   </div>
 </template>
 
@@ -10,6 +14,7 @@ import io from "socket.io-client";
 import { mapGetters } from "vuex";
 import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
+import { SCALE_OPTIONS } from "@/consts";
 
 export default {
   name: "ChartsPage",
@@ -19,54 +24,109 @@ export default {
   data() {
     return {
       socket: null,
+      selected: SCALE_OPTIONS.REALTIME,
     };
   },
   computed: {
     ...mapGetters(["getProfile"]),
   },
-  mounted() {
-    this.socket = io.connect(process.env.VUE_APP_WS_URL, {
-      transports: ["websocket"],
-      upgrade: false,
-      query: `userid=${this.getProfile.id}`,
-    });
-
-    this.socket.on("connect", () => {
-      console.log("CONNECTED");
-
-      this.socket.on("event", (data) => {
-        console.log("EVENT", data);
-      });
-
-      this.socket.on("messages.new", (data) => {
-        console.log("NEW PRIVATE MESSAGE", data);
-        this.$refs.chart.addData(
-          data.data,
-          parseInt(data.socketId),
-          data.timestamp
-        );
-      });
-
-      this.socket.on("disconnect", () => {
-        console.log("DISCONNECTING");
-        this.socket.disconnect();
-      });
-
-      // Kick it off
-      // Can be any channel. For private channels, Laravel should pass it upon page load (or given by another user).
-      const channel = "test";
-
-      this.socket.emit("subscribe-to-channel", { channel: channel });
-      console.log(`SUBSCRIBED TO <${channel}>`);
-    });
+  watch: {
+    selected: function(option) {
+      this.switchScale(option);
+    },
   },
-  methods: {},
+  mounted() {
+    this.switchScale(this.selected);
+  },
+  methods: {
+    switchScale(option) {
+      switch (option) {
+        case SCALE_OPTIONS.REALTIME:
+          this.runWebsocketConnection();
+          break;
+        case SCALE_OPTIONS.ONEHOUR:
+          this.cleanUp();
+          this.runOneHourStats();
+          break;
+        case SCALE_OPTIONS.ONEDAY:
+          this.cleanUp();
+          this.runOneDayStats();
+          break;
+        case SCALE_OPTIONS.ONEWEEK:
+          this.cleanUp();
+          this.runOneWeekStats();
+          break;
+      }
+    },
+
+    runWebsocketConnection() {
+      this.socket = io.connect(process.env.VUE_APP_WS_URL, {
+        transports: ["websocket"],
+        upgrade: false,
+        query: `userid=${this.getProfile.id}`,
+      });
+
+      this.socket.on("connect", () => {
+        console.log("CONNECTED");
+
+        this.socket.on("event", (data) => {
+          console.log("EVENT", data);
+        });
+
+        this.socket.on("messages.new", (data) => {
+          console.log("NEW PRIVATE MESSAGE", data);
+          if (this.$refs.chart) {
+            this.$refs.chart.addData(
+              data.data,
+              parseInt(data.socketId),
+              data.timestamp
+            );
+          }
+        });
+
+        this.socket.on("disconnect", () => {
+          console.log("DISCONNECTING");
+          this.socket.disconnect();
+        });
+
+        const channel = "test";
+
+        this.socket.emit("subscribe-to-channel", { channel: channel });
+        console.log(`SUBSCRIBED TO <${channel}>`);
+      });
+    },
+
+    runOneHourStats() {
+      this.$refs.chart.clearChart();
+      console.log("Onehourstats!");
+    },
+
+    runOneDayStats() {
+      console.log("Onedaystats!");
+    },
+
+    runOneWeekStats() {
+      console.log("Oneweekstats!");
+    },
+
+    wsDisconnect() {
+      if (this.socket) {
+        this.socket.emit("disconnect");
+      }
+      this.socket = null;
+    },
+
+    cleanUp() {
+      this.$refs.chart.clearChart();
+      this.wsDisconnect();
+    },
+  },
   beforeRouteEnter: function(to, from, next) {
     if (store.getters.isAuthenticated) {
       store
         .dispatch(USER_REQUEST)
         .then(() => {
-          next(vm => {
+          next((vm) => {
             // Runs after page is loaded
             vm.$refs.chart.turnOffSpecificGraphs();
           });
@@ -77,7 +137,7 @@ export default {
     }
   },
   beforeRouteLeave: function(to, from, next) {
-    this.socket.emit("disconnect");
+    this.wsDisconnect();
     next();
   },
 };
