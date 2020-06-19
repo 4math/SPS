@@ -39,7 +39,7 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 0 !important;
-  height: calc(100% - 102px) !important;
+  height: calc(100%) !important;
 }
 
 html, body {
