@@ -1,11 +1,28 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"name": "SPS",
+			"path": ".",
 		},
 		{
 			"name": "arduino_firmware",
-			"path": "arduino_firmware"
+			"path": "arduino_firmware",
+		},
+		{
+			"name": "backend",
+			"path": "backend",
+		},
+		{
+			"name": "client",
+			"path": "client",
+		},
+		{
+			"name": "emulator",
+			"path": "emulator",
+		},
+		{
+			"name": "ws-server",
+			"path": "ws-server",
 		}
 	],
 	"settings": {
