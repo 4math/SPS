@@ -2,6 +2,8 @@
   <div id="chart-container">
     <ChartComponent
       ref="chart"
+      :graph="graph"
+      :is-scrolled="isScrolled"
       :selected="selected"
       @onSelectedChange="(option) => (selected = option)"
     />
@@ -14,7 +16,7 @@ import io from "socket.io-client";
 import { mapGetters } from "vuex";
 import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
-import { SCALE_OPTIONS } from "@/consts";
+import { SCALE_OPTIONS, GRAPHS } from "@/consts";
 
 export default {
   name: "ChartsPage",
@@ -25,6 +27,8 @@ export default {
     return {
       socket: null,
       selected: SCALE_OPTIONS.REALTIME,
+      graph: GRAPHS.LINE,
+      isScrolled: false,
     };
   },
   computed: {
@@ -43,18 +47,25 @@ export default {
     switchScale(option) {
       switch (option) {
         case SCALE_OPTIONS.REALTIME:
+          this.cleanUp();
+          this.graph = GRAPHS.LINE;
+          this.isScrolled = false;
           this.runWebsocketConnection();
           break;
         case SCALE_OPTIONS.ONEHOUR:
           this.cleanUp();
+          this.graph = GRAPHS.LINE;
+          this.isScrolled = true;
           this.runOneHourStats();
           break;
         case SCALE_OPTIONS.ONEDAY:
           this.cleanUp();
+          this.graph = GRAPHS.BAR;
           this.runOneDayStats();
           break;
         case SCALE_OPTIONS.ONEWEEK:
           this.cleanUp();
+          this.graph = GRAPHS.BAR;
           this.runOneWeekStats();
           break;
       }
@@ -77,11 +88,12 @@ export default {
         this.socket.on("messages.new", (data) => {
           console.log("NEW PRIVATE MESSAGE", data);
           if (this.$refs.chart) {
-            this.$refs.chart.addData(
-              parseInt(data.socketId),
-              data.data,
-              data.timestamp
-            );
+            this.$refs.chart.pushLabel(data.timestamp, true);
+            this.$refs.chart.addData({
+              unique_id: parseInt(data.socketId),
+              data: data.data,
+              timestamp: data.timestamp,
+            });
           }
         });
 
@@ -98,8 +110,9 @@ export default {
     },
 
     getDate() {
-      // const serverTimeOffset = 3;
       const time = new Date();
+      const magicNumber = -60;
+      const offset = new Date().getTimezoneOffset() / magicNumber;
       const year = time.getFullYear();
       const month =
         time.getMonth() < 10
@@ -107,33 +120,51 @@ export default {
           : time.getMonth() + 1;
       const day = time.getDate() < 10 ? "0" + time.getDate() : time.getDate();
       const hours =
-        time.getHours() < 10 ? "0" + time.getHours() : time.getHours();
+        time.getHours() < 10
+          ? "0" + (time.getHours() - offset)
+          : time.getHours() - offset;
       const minutes =
         time.getMinutes() < 10 ? "0" + time.getMinutes() : time.getMinutes();
       return `${year}-${month}-${day} ${hours}:${minutes}:00`;
     },
 
-    makeHourLess(time_to) {
+    makeTimeByOneLess(time_to, timeSubStr) {
+      const digitAmount = 2;
+      let hour = parseInt(time_to.substr(timeSubStr.start, digitAmount)) - 1;
+      hour = hour - 1 < 10 ? "0" + hour : hour;
+
+      const time_from =
+        time_to.substr(0, timeSubStr.start) +
+        hour +
+        time_to.substr(timeSubStr.end);
+      return time_from;
+    },
+
+    fitToTimeZone(time) {
+      // No comments
+      const magicNumber = -60;
+      const offset = new Date().getTimezoneOffset() / magicNumber;
       const hourSubStr = {
         start: 11,
         end: 13,
         digits: 2,
       };
       let hour =
-        parseInt(time_to.substr(hourSubStr.start, hourSubStr.digits)) - 1;
-      hour = hour - 1 < 10 ? "0" + hour : hour;
+        parseInt(time.substr(hourSubStr.start, hourSubStr.digits)) + offset;
 
-      const time_from =
-        time_to.substr(0, hourSubStr.start) +
-        hour +
-        time_to.substr(hourSubStr.end);
-      return time_from;
+      return (
+        time.substr(0, hourSubStr.start) + hour + time.substr(hourSubStr.end)
+      );
     },
 
+    // Does not work!!!
     async runOneHourStats() {
       const time_to = this.getDate();
       console.log(time_to);
-      const time_from = this.makeHourLess(time_to);
+      const time_from = this.makeTimeByOneLess(time_to, {
+        start: 11,
+        end: 13,
+      });
       console.log(time_from);
 
       try {
@@ -141,17 +172,17 @@ export default {
           const { data } = await this.axios.post(
             `/measurements/get-period/${socket.id}`,
             {
-              time_from: "2020-06-15 16:00:00",
-              time_to: "2020-06-15 17:00:00",
+              time_from: time_from,
+              time_to: time_to,
             }
           );
           console.log(data);
           for (let measurement of data) {
-            this.$refs.chart.addData(
-              parseInt(socket.unique_id),
-              measurement.power,
-              measurement.created_at
-            );
+            this.$refs.chart.addData({
+              unique_id: parseInt(socket.unique_id),
+              data: measurement.power,
+              timestamp: measurement.created_at,
+            });
           }
         }
       } catch (err) {
@@ -159,8 +190,87 @@ export default {
       }
     },
 
-    runOneDayStats() {
-      console.log("Onedaystats!");
+    async runOneDayStats() {
+      const time_to = this.getDate().substr(0, 13) + ":00:00";
+      const time_from = this.makeTimeByOneLess(time_to, {
+        start: 8,
+        end: 10,
+      });
+
+      // let hasGoneOneTime = false;
+      try {
+        for (let socket of this.getSockets) {
+          const { data } = await this.axios.post(
+            `/measurements/get-period/${socket.id}`,
+            {
+              time_from: time_from,
+              time_to: time_to,
+            }
+          );
+
+          let information = [];
+          // `2020-06-05 17:00:00` take 17 from string
+          let hour = parseInt(time_from.substr(11, 13), 10);
+          // `2020-06-05 17:00:00` take 05 from string
+          let day = parseInt(time_from.substr(8, 10), 10);
+          for (let i = 0; i <= 24; ++i) {
+            if (hour > 23) {
+              hour = 0;
+              ++day;
+            }
+
+            let label =
+              time_from.substr(0, 8) +
+              (day < 10 ? "0" + day : day) +
+              " " +
+              hour +
+              ":00:00";
+
+            information.push({
+              label: label,
+              hour: hour,
+              day: day,
+              total: 0,
+              amount: 0,
+            });
+            hour++;
+          }
+
+          for (let measurement of data) {
+            let hour = parseInt(measurement.created_at.substr(11, 13), 10);
+            let day = parseInt(measurement.created_at.substr(8, 10), 10);
+
+            let branch = information.filter(
+              (time) => time.hour === hour && time.day === day
+            );
+            if (branch[0]) {
+              branch[0].total += measurement.power;
+              branch[0].amount++;
+            }
+          }
+
+          // if (!hasGoneOneTime) {
+          for (let piece of information) {
+            if (piece.total === 0) continue;
+            this.$refs.chart.pushLabel(piece.label, false, false);
+          }
+          //   hasGoneOneTime = true;
+          // }
+
+          for (let piece of information) {
+            if (piece.total === 0) continue;
+
+            this.$refs.chart.addData({
+              unique_id: parseInt(socket.unique_id),
+              data: piece.total === 0 ? 0 : piece.total / piece.amount,
+              timestamp: piece.label,
+              doFixTime: false,
+            });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
     },
 
     runOneWeekStats() {
