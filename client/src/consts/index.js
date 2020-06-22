@@ -5,3 +5,7 @@ export const SCALE_OPTIONS = {
   ONEDAY: "ONEDAY",
   ONEWEEK: "ONEWEEK",
 };
+export const GRAPHS = {
+  BAR: "BAR",
+  LINE: "LINE",
+};
