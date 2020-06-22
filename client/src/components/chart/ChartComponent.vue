@@ -2,6 +2,16 @@
   <div id="chart">
     <b-card id="container">
       <LineChart
+        v-if="graph === LINE"
+        id="line-chart"
+        ref="chart"
+        class="chart"
+        :chart-data="dataCollection"
+        :options="options"
+      />
+
+      <BarChart
+        v-if="graph === BAR"
         id="line-chart"
         ref="chart"
         :chart-data="dataCollection"
@@ -20,23 +30,37 @@
 
 <script>
 import LineChart from "./LineChart.js";
+import BarChart from "./BarChart.js";
+// eslint-disable-next-line no-unused-vars
+// import zoom from "chartjs-plugin-zoom";
 import { mapGetters } from "vuex";
-import { MAX_DATA_SET_LENGTH, SCALE_OPTIONS } from "@/consts";
+import { MAX_DATA_SET_LENGTH, SCALE_OPTIONS, GRAPHS } from "@/consts";
 import Colors from "@/objects/Colors";
 
 export default {
   name: "ChartComponent",
   components: {
     LineChart,
+    BarChart,
   },
   props: {
     selected: {
       type: String,
       required: true,
     },
+    graph: {
+      type: String,
+      required: true,
+    },
+    isScrolled: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
+      LINE: GRAPHS.LINE,
+      BAR: GRAPHS.BAR,
       selectedOptions: [
         { value: SCALE_OPTIONS.REALTIME, text: "Scale: Real-time" },
         { value: SCALE_OPTIONS.ONEHOUR, text: "Scale: 1 Hour" },
@@ -66,7 +90,7 @@ export default {
           xPadding: 14,
           yPadding: 14,
           displayColors: false,
-          // mode: "index",
+          // mode: "nearest",
           intersect: false,
           callbacks: {
             title: (tooltipItem, data) => {
@@ -89,6 +113,27 @@ export default {
             fontSize: 18,
           },
         },
+        // plugins: {
+        //   zoom: {
+        //     pan: {
+        //       enabled: true,
+        //       mode: "x",
+        //       speed: 100,
+        //       // rangeMax: {
+        //       //   x: 5
+        //       // }
+        //     },
+        //     zoom: {
+        //       enabled: true,
+        //       speed: 10,
+        //       mode: "x",
+        //       sensitivity: 0.5,
+        //       // rangeMax: {
+        //       //   x: 2
+        //       // },
+        //     },
+        //   },
+        // },
       },
     };
   },
@@ -102,6 +147,11 @@ export default {
       set(option) {
         this.$emit("onSelectedChange", option);
       },
+    },
+  },
+  watch: {
+    graph: function() {
+      this.clearChart();
     },
   },
   mounted() {
@@ -133,17 +183,37 @@ export default {
       this.$refs.chart.renderChart(this.dataCollection, this.options);
     },
 
-    addData(unique_id, data, timestamp) {
+    editTime(timestamp, fixTimeZone = true) {
+      // 2020-06-14T12:38:12.000000Z - slicing off year-month-day and dot precision
+      timestamp = timestamp.slice(11).slice(0, 8);
+      let hour = parseInt(timestamp.substr(0, 2));
+      if (fixTimeZone) {
+        const offset = new Date().getTimezoneOffset() / -60;
+        hour += offset;
+      }
+      timestamp = hour + timestamp.substr(2);
+      return timestamp;
+    },
+
+    pushLabel(timestamp, doFixTime = true, fixTimeZone = true) {
+      const labels = this.dataCollection.labels;
+      if (doFixTime) {
+        timestamp = this.editTime(timestamp, fixTimeZone);
+      }
+      labels.push(timestamp);
+    },
+
+    addData({ unique_id, data, timestamp, doFixTime = true }) {
       const datasets = this.dataCollection.datasets;
       const labels = this.dataCollection.labels;
 
-      // 2020-06-14T12:38:12.000000Z - slicing off year-month-day and dot precision
-      const time = timestamp.slice(11).slice(0, 8);
-      labels.push(time);
+      if (doFixTime) {
+        timestamp = this.editTime(timestamp);
+      }
 
       datasets
         .find((socket) => socket.unique_id === unique_id)
-        .data.push({ x: time, y: data });
+        .data.push({ x: timestamp, y: data });
 
       if (this.internalSelected === SCALE_OPTIONS.REALTIME) {
         this.checkMaxLength(datasets, labels);
@@ -242,5 +312,10 @@ export default {
 
 #scale-select:hover {
   cursor: pointer;
+}
+
+.chartAreaWrapper {
+  width: 80%;
+  overflow-x: scroll;
 }
 </style>
