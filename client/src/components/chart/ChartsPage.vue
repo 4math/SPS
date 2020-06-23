@@ -197,7 +197,7 @@ export default {
         end: 10,
       });
 
-      // let hasGoneOneTime = false;
+      let hasGoneOneTime = false;
       try {
         for (let socket of this.getSockets) {
           const { data } = await this.axios.post(
@@ -226,6 +226,7 @@ export default {
               hour +
               ":00:00";
 
+            // timezone fitting is needed
             information.push({
               label: label,
               hour: hour,
@@ -249,16 +250,16 @@ export default {
             }
           }
 
-          // if (!hasGoneOneTime) {
-          for (let piece of information) {
-            if (piece.total === 0) continue;
-            this.$refs.chart.pushLabel(piece.label, false, false);
+          if (!hasGoneOneTime) {
+            for (let piece of information) {
+              // if (piece.total === 0) continue;
+              this.$refs.chart.pushLabel(piece.label, false, false);
+            }
+            hasGoneOneTime = true;
           }
-          //   hasGoneOneTime = true;
-          // }
 
           for (let piece of information) {
-            if (piece.total === 0) continue;
+            // if (piece.total === 0) continue;
 
             this.$refs.chart.addData({
               unique_id: parseInt(socket.unique_id),
@@ -273,8 +274,107 @@ export default {
       }
     },
 
-    runOneWeekStats() {
-      console.log("Oneweekstats!");
+    weekAgo() {
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      // const magicNumber = -60;
+      // const offset = new Date().getTimezoneOffset() / magicNumber;
+      const year = oneWeekAgo.getFullYear();
+      const month =
+        oneWeekAgo.getMonth() < 10
+          ? "0" + (oneWeekAgo.getMonth() + 1)
+          : oneWeekAgo.getMonth() + 1;
+      const day =
+        oneWeekAgo.getDate() < 10
+          ? "0" + oneWeekAgo.getDate()
+          : oneWeekAgo.getDate();
+      return `${year}-${month}-${day}`;
+    },
+
+    formatDateString(date) {
+      const year = date.getFullYear();
+      const month =
+        date.getMonth() < 10
+          ? "0" + (date.getMonth() + 1)
+          : date.getMonth() + 1;
+      const day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+      return `${year}-${month}-${day}`;
+    },
+
+    async runOneWeekStats() {
+      const date = new Date();
+      date.setDate(date.getDate() + 1);
+      // const time_to = this.getDate().substr(0, 11);
+      const time_to = this.formatDateString(date);
+      const time_from = this.weekAgo();
+
+      console.log(time_to);
+      console.log(time_from);
+
+      let hasGoneOneTime = false;
+      try {
+        for (let socket of this.getSockets) {
+          const { data } = await this.axios.post(
+            `/measurements/get-period/${socket.id}`,
+            {
+              time_from: time_from,
+              time_to: time_to,
+            }
+          );
+
+          console.log(data.length);
+          console.log(data);
+
+          let information = [];
+          for (let i = 7; i >= 0; --i) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+
+            const label = this.formatDateString(date);
+
+            // `2020-06-05 17:00:00` take 05 from string
+            const day = parseInt(label.substr(8, 10), 10);
+
+            information.push({
+              label: label,
+              day: day,
+              total: 0,
+              amount: 0,
+            });
+          }
+
+          window.info = information;
+          console.log(information);
+
+          for (let measurement of data) {
+            let day = parseInt(measurement.created_at.substr(8, 10), 10);
+
+            let branch = information.filter((time) => time.day === day);
+            if (branch[0]) {
+              branch[0].total += measurement.power;
+              branch[0].amount++;
+            }
+          }
+
+          if (!hasGoneOneTime) {
+            for (let piece of information) {
+              this.$refs.chart.pushLabel(piece.label, false, false);
+            }
+            hasGoneOneTime = true;
+          }
+
+          for (let piece of information) {
+            this.$refs.chart.addData({
+              unique_id: parseInt(socket.unique_id),
+              data: piece.total === 0 ? 0 : piece.total / piece.amount,
+              timestamp: piece.label,
+              doFixTime: false,
+            });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
     },
 
     wsDisconnect() {

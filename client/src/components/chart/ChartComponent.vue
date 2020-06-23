@@ -90,7 +90,7 @@ export default {
           xPadding: 14,
           yPadding: 14,
           displayColors: false,
-          // mode: "nearest",
+          mode: "nearest",
           intersect: false,
           callbacks: {
             title: (tooltipItem, data) => {
