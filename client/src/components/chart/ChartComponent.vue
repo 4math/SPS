@@ -183,33 +183,14 @@ export default {
       this.$refs.chart.renderChart(this.dataCollection, this.options);
     },
 
-    editTime(timestamp, fixTimeZone = true) {
-      // 2020-06-14T12:38:12.000000Z - slicing off year-month-day and dot precision
-      timestamp = timestamp.slice(11).slice(0, 8);
-      let hour = parseInt(timestamp.substr(0, 2));
-      if (fixTimeZone) {
-        const offset = new Date().getTimezoneOffset() / -60;
-        hour += offset;
-      }
-      timestamp = hour + timestamp.substr(2);
-      return timestamp;
-    },
-
-    pushLabel(timestamp, doFixTime = true, fixTimeZone = true) {
+    pushLabel(timestamp) {
       const labels = this.dataCollection.labels;
-      if (doFixTime) {
-        timestamp = this.editTime(timestamp, fixTimeZone);
-      }
       labels.push(timestamp);
     },
 
-    addData({ unique_id, data, timestamp, doFixTime = true }) {
+    addData({ unique_id, data, timestamp }) {
       const datasets = this.dataCollection.datasets;
       const labels = this.dataCollection.labels;
-
-      if (doFixTime) {
-        timestamp = this.editTime(timestamp);
-      }
 
       datasets
         .find((socket) => socket.unique_id === unique_id)
