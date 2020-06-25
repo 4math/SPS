@@ -17,6 +17,9 @@ import { mapGetters } from "vuex";
 import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
 import { SCALE_OPTIONS, GRAPHS } from "@/consts";
+import WeekStatisticsFormatter from "./statistics-formatters/WeekStatisticsFormatter";
+import DayStatisticsFormatter from "./statistics-formatters/DayStatiscticsFormatter";
+import StatisticsFormatter from "./statistics-formatters/StatisticsFormatter";
 
 export default {
   name: "ChartsPage",
@@ -72,6 +75,8 @@ export default {
     },
 
     runWebsocketConnection() {
+      const formatter = new StatisticsFormatter();
+
       this.socket = io.connect(process.env.VUE_APP_WS_URL, {
         transports: ["websocket"],
         upgrade: false,
@@ -87,14 +92,13 @@ export default {
 
         this.socket.on("messages.new", (data) => {
           console.log("NEW PRIVATE MESSAGE", data);
-          if (this.$refs.chart) {
-            this.$refs.chart.pushLabel(data.timestamp, true);
-            this.$refs.chart.addData({
-              unique_id: parseInt(data.socketId),
-              data: data.data,
-              timestamp: data.timestamp,
-            });
-          }
+          const timestamp = formatter.getHoursAndMinutes(data.timestamp);
+          this.$refs.chart.pushLabel(timestamp);
+          this.$refs.chart.addData({
+            unique_id: parseInt(data.socketId),
+            data: data.data,
+            timestamp: timestamp,
+          });
         });
 
         this.socket.on("disconnect", () => {
@@ -107,54 +111,6 @@ export default {
         this.socket.emit("subscribe-to-channel", { channel: channel });
         console.log(`SUBSCRIBED TO <${channel}>`);
       });
-    },
-
-    getDate() {
-      const time = new Date();
-      const magicNumber = -60;
-      const offset = new Date().getTimezoneOffset() / magicNumber;
-      const year = time.getFullYear();
-      const month =
-        time.getMonth() < 10
-          ? "0" + (time.getMonth() + 1)
-          : time.getMonth() + 1;
-      const day = time.getDate() < 10 ? "0" + time.getDate() : time.getDate();
-      const hours =
-        time.getHours() < 10
-          ? "0" + (time.getHours() - offset)
-          : time.getHours() - offset;
-      const minutes =
-        time.getMinutes() < 10 ? "0" + time.getMinutes() : time.getMinutes();
-      return `${year}-${month}-${day} ${hours}:${minutes}:00`;
-    },
-
-    makeTimeByOneLess(time_to, timeSubStr) {
-      const digitAmount = 2;
-      let hour = parseInt(time_to.substr(timeSubStr.start, digitAmount)) - 1;
-      hour = hour - 1 < 10 ? "0" + hour : hour;
-
-      const time_from =
-        time_to.substr(0, timeSubStr.start) +
-        hour +
-        time_to.substr(timeSubStr.end);
-      return time_from;
-    },
-
-    fitToTimeZone(time) {
-      // No comments
-      const magicNumber = -60;
-      const offset = new Date().getTimezoneOffset() / magicNumber;
-      const hourSubStr = {
-        start: 11,
-        end: 13,
-        digits: 2,
-      };
-      let hour =
-        parseInt(time.substr(hourSubStr.start, hourSubStr.digits)) + offset;
-
-      return (
-        time.substr(0, hourSubStr.start) + hour + time.substr(hourSubStr.end)
-      );
     },
 
     // Does not work!!!
@@ -191,11 +147,10 @@ export default {
     },
 
     async runOneDayStats() {
-      const time_to = this.getDate().substr(0, 13) + ":00:00";
-      const time_from = this.makeTimeByOneLess(time_to, {
-        start: 8,
-        end: 10,
-      });
+
+      const formatter = new DayStatisticsFormatter();
+
+      const [time_from, time_to] = formatter.createTimeRange();
 
       let hasGoneOneTime = false;
       try {
@@ -208,40 +163,28 @@ export default {
             }
           );
 
-          let information = [];
-          // `2020-06-05 17:00:00` take 17 from string
-          let hour = parseInt(time_from.substr(11, 13), 10);
-          // `2020-06-05 17:00:00` take 05 from string
-          let day = parseInt(time_from.substr(8, 10), 10);
-          for (let i = 0; i <= 24; ++i) {
-            if (hour > 23) {
-              hour = 0;
-              ++day;
-            }
+          console.log(data);
 
-            let label =
-              time_from.substr(0, 8) +
-              (day < 10 ? "0" + day : day) +
-              " " +
-              hour +
-              ":00:00";
-
-            // timezone fitting is needed
-            information.push({
-              label: label,
-              hour: hour,
-              day: day,
-              total: 0,
-              amount: 0,
-            });
-            hour++;
-          }
+          let statistics = [];
+          formatter.fillStatistics(statistics);
 
           for (let measurement of data) {
-            let hour = parseInt(measurement.created_at.substr(11, 13), 10);
-            let day = parseInt(measurement.created_at.substr(8, 10), 10);
+            let day = parseInt(
+              measurement.created_at.substr(
+                formatter.daySubStr.from,
+                formatter.daySubStr.length
+              ),
+              10
+            );
+            let hour = parseInt(
+              measurement.created_at.substr(
+                formatter.hourSubStr.from,
+                formatter.hourSubStr.length
+              ),
+              10
+            );
 
-            let branch = information.filter(
+            let branch = statistics.filter(
               (time) => time.hour === hour && time.day === day
             );
             if (branch[0]) {
@@ -251,21 +194,20 @@ export default {
           }
 
           if (!hasGoneOneTime) {
-            for (let piece of information) {
+            for (let piece of statistics) {
               // if (piece.total === 0) continue;
-              this.$refs.chart.pushLabel(piece.label, false, false);
+              this.$refs.chart.pushLabel(piece.label);
             }
             hasGoneOneTime = true;
           }
 
-          for (let piece of information) {
+          for (let piece of statistics) {
             // if (piece.total === 0) continue;
 
             this.$refs.chart.addData({
               unique_id: parseInt(socket.unique_id),
               data: piece.total === 0 ? 0 : piece.total / piece.amount,
               timestamp: piece.label,
-              doFixTime: false,
             });
           }
         }
@@ -274,44 +216,11 @@ export default {
       }
     },
 
-    weekAgo() {
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      // const magicNumber = -60;
-      // const offset = new Date().getTimezoneOffset() / magicNumber;
-      const year = oneWeekAgo.getFullYear();
-      const month =
-        oneWeekAgo.getMonth() < 10
-          ? "0" + (oneWeekAgo.getMonth() + 1)
-          : oneWeekAgo.getMonth() + 1;
-      const day =
-        oneWeekAgo.getDate() < 10
-          ? "0" + oneWeekAgo.getDate()
-          : oneWeekAgo.getDate();
-      return `${year}-${month}-${day}`;
-    },
-
-    formatDateString(date) {
-      const year = date.getFullYear();
-      const month =
-        date.getMonth() < 10
-          ? "0" + (date.getMonth() + 1)
-          : date.getMonth() + 1;
-      const day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
-      return `${year}-${month}-${day}`;
-    },
-
     async runOneWeekStats() {
-      const date = new Date();
-      date.setDate(date.getDate() + 1);
-      // const time_to = this.getDate().substr(0, 11);
-      const time_to = this.formatDateString(date);
-      const time_from = this.weekAgo();
+      const formatter = new WeekStatisticsFormatter();
+      const [time_from, time_to] = formatter.createTimeRange();
 
-      console.log(time_to);
-      console.log(time_from);
-
-      let hasGoneOneTime = false;
+      let hasLoopedOneTime = false;
       try {
         for (let socket of this.getSockets) {
           const { data } = await this.axios.post(
@@ -322,53 +231,37 @@ export default {
             }
           );
 
-          console.log(data.length);
-          console.log(data);
-
-          let information = [];
-          for (let i = 7; i >= 0; --i) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-
-            const label = this.formatDateString(date);
-
-            // `2020-06-05 17:00:00` take 05 from string
-            const day = parseInt(label.substr(8, 10), 10);
-
-            information.push({
-              label: label,
-              day: day,
-              total: 0,
-              amount: 0,
-            });
-          }
-
-          window.info = information;
-          console.log(information);
+          const statistics = [];
+          formatter.fillStatistics(statistics);
 
           for (let measurement of data) {
-            let day = parseInt(measurement.created_at.substr(8, 10), 10);
+            let day = parseInt(
+              measurement.created_at.substr(
+                formatter.daySubStr.from,
+                formatter.daySubStr.length
+              ),
+              10
+            );
 
-            let branch = information.filter((time) => time.day === day);
+            let branch = statistics.filter((time) => time.day === day);
             if (branch[0]) {
               branch[0].total += measurement.power;
               branch[0].amount++;
             }
           }
 
-          if (!hasGoneOneTime) {
-            for (let piece of information) {
-              this.$refs.chart.pushLabel(piece.label, false, false);
+          if (!hasLoopedOneTime) {
+            for (let piece of statistics) {
+              this.$refs.chart.pushLabel(piece.label);
             }
-            hasGoneOneTime = true;
+            hasLoopedOneTime = true;
           }
 
-          for (let piece of information) {
+          for (let piece of statistics) {
             this.$refs.chart.addData({
               unique_id: parseInt(socket.unique_id),
               data: piece.total === 0 ? 0 : piece.total / piece.amount,
               timestamp: piece.label,
-              doFixTime: false,
             });
           }
         }
