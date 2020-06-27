@@ -3,7 +3,6 @@
     <ChartComponent
       ref="chart"
       :graph="graph"
-      :is-scrolled="isScrolled"
       :selected="selected"
       @onSelectedChange="(option) => (selected = option)"
     />
@@ -18,7 +17,8 @@ import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
 import { SCALE_OPTIONS, GRAPHS } from "@/consts";
 import WeekStatisticsFormatter from "./statistics-formatters/WeekStatisticsFormatter";
-import DayStatisticsFormatter from "./statistics-formatters/DayStatiscticsFormatter";
+import DayStatisticsFormatter from "./statistics-formatters/DayStatisticsFormatter";
+import HourStatisticsFormatter from "./statistics-formatters/HourStatisticsFormatter";
 import StatisticsFormatter from "./statistics-formatters/StatisticsFormatter";
 
 export default {
@@ -31,7 +31,6 @@ export default {
       socket: null,
       selected: SCALE_OPTIONS.REALTIME,
       graph: GRAPHS.LINE,
-      isScrolled: false,
     };
   },
   computed: {
@@ -52,23 +51,25 @@ export default {
         case SCALE_OPTIONS.REALTIME:
           this.cleanUp();
           this.graph = GRAPHS.LINE;
-          this.isScrolled = false;
+          this.$refs.chart.updateTitle("REAL-TIME DATA GRAPH");
           this.runWebsocketConnection();
           break;
         case SCALE_OPTIONS.ONEHOUR:
           this.cleanUp();
-          this.graph = GRAPHS.LINE;
-          this.isScrolled = true;
+          this.graph = GRAPHS.BAR;
+          this.$refs.chart.updateTitle("ONE HOUR AVERAGE DATA GRAPH");
           this.runOneHourStats();
           break;
         case SCALE_OPTIONS.ONEDAY:
           this.cleanUp();
           this.graph = GRAPHS.BAR;
+          this.$refs.chart.updateTitle("ONE DAY AVERAGE DATA GRAPH");
           this.runOneDayStats();
           break;
         case SCALE_OPTIONS.ONEWEEK:
           this.cleanUp();
           this.graph = GRAPHS.BAR;
+          this.$refs.chart.updateTitle("ONE WEEK AVERAGE DATA GRAPH");
           this.runOneWeekStats();
           break;
       }
@@ -113,16 +114,11 @@ export default {
       });
     },
 
-    // Does not work!!!
     async runOneHourStats() {
-      const time_to = this.getDate();
-      console.log(time_to);
-      const time_from = this.makeTimeByOneLess(time_to, {
-        start: 11,
-        end: 13,
-      });
-      console.log(time_from);
+      const formatter = new HourStatisticsFormatter();
+      const [time_from, time_to] = formatter.createTimeRange();
 
+      let hasGoneOneTime = false;
       try {
         for (let socket of this.getSockets) {
           const { data } = await this.axios.post(
@@ -132,12 +128,39 @@ export default {
               time_to: time_to,
             }
           );
-          console.log(data);
+          let statistics = [];
+          formatter.fillStatistics(statistics);
+
           for (let measurement of data) {
+            const date = new Date(measurement.created_at);
+
+            const hour = date.getUTCHours();
+            const minutes = date.getUTCMinutes();
+
+            let branch = statistics.filter(
+              (time) =>
+                time.hour === hour && minutes >= time.from && minutes <= time.to
+            );
+            if (branch[0]) {
+              branch[0].total += measurement.power;
+              branch[0].amount++;
+            }
+          }
+
+          console.log(statistics);
+
+          if (!hasGoneOneTime) {
+            for (let piece of statistics) {
+              this.$refs.chart.pushLabel(piece.label);
+            }
+            hasGoneOneTime = true;
+          }
+
+          for (let piece of statistics) {
             this.$refs.chart.addData({
               unique_id: parseInt(socket.unique_id),
-              data: measurement.power,
-              timestamp: measurement.created_at,
+              data: piece.total === 0 ? 0 : piece.total / piece.amount,
+              timestamp: piece.label,
             });
           }
         }
@@ -147,7 +170,6 @@ export default {
     },
 
     async runOneDayStats() {
-
       const formatter = new DayStatisticsFormatter();
 
       const [time_from, time_to] = formatter.createTimeRange();
@@ -163,26 +185,14 @@ export default {
             }
           );
 
-          console.log(data);
-
           let statistics = [];
           formatter.fillStatistics(statistics);
 
           for (let measurement of data) {
-            let day = parseInt(
-              measurement.created_at.substr(
-                formatter.daySubStr.from,
-                formatter.daySubStr.length
-              ),
-              10
-            );
-            let hour = parseInt(
-              measurement.created_at.substr(
-                formatter.hourSubStr.from,
-                formatter.hourSubStr.length
-              ),
-              10
-            );
+            const date = new Date(measurement.created_at);
+
+            const day = date.getUTCDate();
+            const hour = date.getUTCHours();
 
             let branch = statistics.filter(
               (time) => time.hour === hour && time.day === day
@@ -235,13 +245,9 @@ export default {
           formatter.fillStatistics(statistics);
 
           for (let measurement of data) {
-            let day = parseInt(
-              measurement.created_at.substr(
-                formatter.daySubStr.from,
-                formatter.daySubStr.length
-              ),
-              10
-            );
+            const date = new Date(measurement.created_at);
+
+            const day = date.getUTCDate();
 
             let branch = statistics.filter((time) => time.day === day);
             if (branch[0]) {

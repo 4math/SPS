@@ -52,10 +52,6 @@ export default {
       type: String,
       required: true,
     },
-    isScrolled: {
-      type: Boolean,
-      required: true,
-    },
   },
   data() {
     return {
@@ -112,6 +108,11 @@ export default {
             fontFamily: "sans-serif",
             fontSize: 18,
           },
+        },
+        title: {
+          display: true,
+          text: "",
+          fontSize: 20,
         },
         // plugins: {
         //   zoom: {
@@ -178,6 +179,12 @@ export default {
       };
     },
 
+    // rerenders the chart completely!
+    updateTitle(title) {
+      this.options.title.text = title;
+      this.$refs.chart.renderChart(this.dataCollection, this.options);
+    },
+
     clearChart() {
       this.fillData();
       this.$refs.chart.renderChart(this.dataCollection, this.options);
@@ -201,7 +208,6 @@ export default {
       }
 
       const chart = this.$refs.chart.$data._chart;
-      // this.$refs.chart.renderChart(this.dataCollection, this.options);
       chart.update();
     },
 
@@ -287,7 +293,7 @@ export default {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 20%;
+  width: 180px;
   margin: 5px;
 }
 
@@ -295,8 +301,9 @@ export default {
   cursor: pointer;
 }
 
-.chartAreaWrapper {
-  width: 80%;
-  overflow-x: scroll;
-}
+/* @media only screen and (max-width: 600px) {
+  #scale-select {
+    right: 50%;
+  }
+} */
 </style>
