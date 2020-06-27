@@ -47,6 +47,7 @@ Route::prefix('measurements')->group(function (){
 	Route::group(['middleware' => 'auth:api'], function (){
 		Route::get('list/{socket_id}', 'MeasurementsController@list');
 		Route::delete('{id}', 'MeasurementsController@delete');
+		Route::post('get-period/{id}', 'MeasurementsController@getDataInPeriod');
 	});
 });
 

@@ -107,7 +107,6 @@ export default {
 
       // Kick it off
       // Can be any channel. For private channels, Laravel should pass it upon page load (or given by another user).
-      // eslint-disable-next-line no-undef
       const channel = process.env.VUE_APP_WS_REDIS_CHANNEL;
       this.socket.emit("subscribe-to-channel", { channel: channel });
     });
@@ -171,19 +170,15 @@ export default {
       this.showSocketUpdateInfoModal = true;
       this.idToUpdate = id;
       this.nameToUpdate = name;
-      this.descToUpdate = description;
+      this.descToUpdate = description ? description : "";
     },
 
     async confirmToUpdate(name, description) {
       try {
-        const { data } = await this.axios.put(
-          `/sockets/update-info/${this.idToUpdate}`,
-          {
-            name: name,
-            description: description,
-          }
-        );
-        console.log(data);
+        await this.axios.put(`/sockets/update-info/${this.idToUpdate}`, {
+          name: name,
+          description: description,
+        });
         const socket = this.sockets.find(
           (socket) => socket.id === this.idToUpdate
         );

@@ -2,46 +2,67 @@
   <div id="chart">
     <b-card id="container">
       <LineChart
+        v-if="graph === LINE"
+        id="line-chart"
+        ref="chart"
+        class="chart"
+        :chart-data="dataCollection"
+        :options="options"
+      />
+
+      <BarChart
+        v-if="graph === BAR"
         id="line-chart"
         ref="chart"
         :chart-data="dataCollection"
         :options="options"
       />
 
-      <b-dropdown
-        id="dropdown-right"
-        right
-        text="Scale"
-        variant="primary"
-        class="m-2"
-      >
-        <b-dropdown-item href="#">
-          1 Hour
-        </b-dropdown-item>
-        <b-dropdown-item href="#">
-          1 Day
-        </b-dropdown-item>
-        <b-dropdown-item href="#">
-          1 Week
-        </b-dropdown-item>
-      </b-dropdown>
+      <b-form-select
+        id="scale-select"
+        v-model="internalSelected"
+        :options="selectedOptions"
+        size="md"
+      />
     </b-card>
   </div>
 </template>
 
 <script>
 import LineChart from "./LineChart.js";
+import BarChart from "./BarChart.js";
+// eslint-disable-next-line no-unused-vars
+// import zoom from "chartjs-plugin-zoom";
 import { mapGetters } from "vuex";
-import { MAX_DATA_SET_LENGTH } from "@/consts";
+import { MAX_DATA_SET_LENGTH, SCALE_OPTIONS, GRAPHS } from "@/consts";
 import Colors from "@/objects/Colors";
 
 export default {
   name: "ChartComponent",
   components: {
     LineChart,
+    BarChart,
+  },
+  props: {
+    selected: {
+      type: String,
+      required: true,
+    },
+    graph: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
+      LINE: GRAPHS.LINE,
+      BAR: GRAPHS.BAR,
+      selectedOptions: [
+        { value: SCALE_OPTIONS.REALTIME, text: "Scale: Real-time" },
+        { value: SCALE_OPTIONS.ONEHOUR, text: "Scale: 1 Hour" },
+        { value: SCALE_OPTIONS.ONEDAY, text: "Scale: 1 Day" },
+        { value: SCALE_OPTIONS.ONEWEEK, text: "Scale: 1 Week" },
+      ],
       dataCollection: {},
       options: {
         responsive: true,
@@ -65,7 +86,7 @@ export default {
           xPadding: 14,
           yPadding: 14,
           displayColors: false,
-          // mode: "index",
+          mode: "nearest",
           intersect: false,
           callbacks: {
             title: (tooltipItem, data) => {
@@ -88,86 +109,121 @@ export default {
             fontSize: 18,
           },
         },
+        title: {
+          display: true,
+          text: "",
+          fontSize: 20,
+        },
+        // plugins: {
+        //   zoom: {
+        //     pan: {
+        //       enabled: true,
+        //       mode: "x",
+        //       speed: 100,
+        //       // rangeMax: {
+        //       //   x: 5
+        //       // }
+        //     },
+        //     zoom: {
+        //       enabled: true,
+        //       speed: 10,
+        //       mode: "x",
+        //       sensitivity: 0.5,
+        //       // rangeMax: {
+        //       //   x: 2
+        //       // },
+        //     },
+        //   },
+        // },
       },
     };
   },
   computed: {
     ...mapGetters(["getSockets"]),
+    internalSelected: {
+      get() {
+        return this.selected;
+      },
+
+      set(option) {
+        this.$emit("onSelectedChange", option);
+      },
+    },
+  },
+  watch: {
+    graph: function() {
+      this.clearChart();
+    },
   },
   mounted() {
-    this.fillData();
-    this.$refs.chart.renderChart(this.dataCollection, this.options);
+    this.clearChart();
   },
   methods: {
     fillData() {
-      const datasets = this.getSockets.map((item, index) => {
-        return {
-          fill: true,
-          label: item.name,
-          id: parseInt(item.unique_id),
-          // adding opacity to the hex color. 70 is about 44% opacity
-          backgroundColor: Colors[index] + "70",
-          pointHoverBackgroundColor: Colors[index] + "CC",
-          borderColor: Colors[index],
-          pointHoverBorderColor: "#0062ff",
-          data: [],
-        };
-      });
+      const datasets = this.getSockets.map((item, index) => ({
+        fill: true,
+        label: item.name,
+        id: parseInt(item.id),
+        unique_id: parseInt(item.unique_id),
+        // adding opacity to the hex color. 70 is about 44% opacity
+        backgroundColor: Colors[index] + "70",
+        pointHoverBackgroundColor: Colors[index] + "CC",
+        borderColor: Colors[index],
+        pointHoverBorderColor: "#0062ff",
+        data: [],
+      }));
 
       this.dataCollection = {
         labels: [],
         datasets: datasets,
-        // [
-        // {
-        //   fill: true,
-        //   label: "Consumed power",
-        //   backgroundColor: "#f0f0f0",
-        //   // pointBackgroundColor: "#0062ff",
-        //   // pointHoverBorderColor: "#0062ff",
-        //   // pointHoverBackgroundColor: "#0062ff",
-        //   borderColor: "#f87979",
-        //   data: [],
-        // },
-        // ],
       };
     },
-    getRandomInt() {
-      return Math.floor(Math.random() * (50 - 5 + 1)) + 5;
-    },
-    getTime() {
-      const date = new Date();
-      return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+
+    // rerenders the chart completely!
+    updateTitle(title) {
+      this.options.title.text = title;
+      this.$refs.chart.renderChart(this.dataCollection, this.options);
     },
 
-    addData(data, id, timestamp) {
+    clearChart() {
+      this.fillData();
+      this.$refs.chart.renderChart(this.dataCollection, this.options);
+    },
+
+    pushLabel(timestamp) {
+      const labels = this.dataCollection.labels;
+      labels.push(timestamp);
+    },
+
+    addData({ unique_id, data, timestamp }) {
       const datasets = this.dataCollection.datasets;
       const labels = this.dataCollection.labels;
 
-      // 2020-06-14T12:38:12.000000Z - slicing off year-month-day and dot precision
-      const time = timestamp.slice(11).slice(0, 8);
-      labels.push(time);
-
       datasets
-        .find((socket) => socket.id === id)
-        .data.push({ x: time, y: data });
+        .find((socket) => socket.unique_id === unique_id)
+        .data.push({ x: timestamp, y: data });
 
-      this.checkMaxLength(datasets, labels);
+      if (this.internalSelected === SCALE_OPTIONS.REALTIME) {
+        this.checkMaxLength(datasets, labels);
+      }
 
       const chart = this.$refs.chart.$data._chart;
-      // this.$refs.chart.renderChart(this.dataCollection, this.options);
       chart.update();
     },
 
     checkMaxLength(datasets, labels) {
-      const lengths = datasets.map((socket) => {
-        return { id: socket.id, len: socket.data.length };
-      });
+      const lengths = datasets.map((socket) => ({
+        id: socket.unique_id,
+        len: socket.data.length,
+      }));
 
       let didRemove = false;
 
       for (let length of lengths) {
         if (length.len > MAX_DATA_SET_LENGTH) {
-          datasets.find((socket) => socket.id === length.id).data.shift();
+          datasets
+            .find((socket) => socket.unique_id === length.id)
+            .data.shift();
           didRemove = true;
         }
       }
@@ -182,7 +238,7 @@ export default {
       if (id) {
         const datasets = chart.data.datasets;
         const element = datasets.find(
-          (socket) => socket.id === parseInt(id, 10)
+          (socket) => socket.unique_id === parseInt(id, 10)
         );
         const index = datasets.indexOf(element);
         for (let i = 0; i < datasets.length; i++) {
@@ -215,7 +271,7 @@ export default {
 }
 
 .card-body {
-  padding-bottom: 2.5em;
+  padding-bottom: 3.5rem;
   padding-right: 0.5rem;
   padding-left: 0.5rem;
 }
@@ -233,9 +289,21 @@ export default {
   margin: 5px;
 }
 
-#dropdown-right {
+#scale-select {
   position: absolute;
   bottom: 0;
   right: 0;
+  width: 180px;
+  margin: 5px;
 }
+
+#scale-select:hover {
+  cursor: pointer;
+}
+
+/* @media only screen and (max-width: 600px) {
+  #scale-select {
+    right: 50%;
+  }
+} */
 </style>
