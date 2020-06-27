@@ -14,7 +14,11 @@
 ```
 composer install
 ```
-- Fill the .env.example file and rename it to .env
+- Copy .env file
+```
+cp .env.example .env
+```
+- Create database in phpmyadmin and give it a name in DB_DATABASE. Also set up ports for laravel and Redis. 
 - Create application key
 ```
 php artisan key:generate
