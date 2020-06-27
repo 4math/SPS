@@ -107,7 +107,6 @@ export default {
 
       // Kick it off
       // Can be any channel. For private channels, Laravel should pass it upon page load (or given by another user).
-      // eslint-disable-next-line no-undef
       const channel = process.env.VUE_APP_WS_REDIS_CHANNEL;
       this.socket.emit("subscribe-to-channel", { channel: channel });
     });

@@ -1,5 +1,5 @@
 import Router from "vue-router";
-import HelloWorld from "@/components/HelloWorld";
+import HomePage from "@/components/HomePage";
 import Login from "@/components/auth/Login";
 import Dashboard from "@/components/Dashboard";
 import Register from "@/components/auth/Register";
@@ -28,8 +28,8 @@ const router = new Router({
   routes: [
     {
       path: "/",
-      name: "HelloWorld",
-      component: HelloWorld,
+      name: "HomePage",
+      component: HomePage,
     },
     {
       path: "/login",
