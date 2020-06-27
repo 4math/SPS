@@ -300,10 +300,4 @@ export default {
 #scale-select:hover {
   cursor: pointer;
 }
-
-/* @media only screen and (max-width: 600px) {
-  #scale-select {
-    right: 50%;
-  }
-} */
 </style>
