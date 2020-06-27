@@ -23,7 +23,9 @@ export default class Logger {
     const prepend: string = "[WARNING]";
     const message: string = ` (${time}) - ${data}`;
     this.logger.write(prepend + message + "\n");
-    console.log(Coloring.colorize(prepend, Coloring.Colors.fg.Yellow) + message);
+    console.log(
+      Coloring.colorize(prepend, Coloring.Colors.fg.Yellow) + message
+    );
   }
 
   public error(data: string): void {

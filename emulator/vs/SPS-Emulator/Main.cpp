@@ -34,7 +34,7 @@ int main() {
 	}
 
 	{
-		std::ifstream infile("../../config");
+		std::ifstream infile("../../.config");
 		infile >> address;
 		infile >> port;
 	}

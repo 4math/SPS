@@ -10,7 +10,7 @@ cmake CMakeLists.txt
 cmake --build . --config release
 ```
 
-## Set the IP address and port in the **config** file which is in the root of the **emulator** folder
+## Set the IP address and port in the **.config** file which is in the root of the **emulator** folder
 
 For example:
 ```
