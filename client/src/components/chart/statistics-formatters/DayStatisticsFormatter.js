@@ -31,11 +31,11 @@ export default class DayStatisticsFormatter extends StatisticsFormatter {
   }
 
   createTimeRange() {
-    const time_to = this.getDateString();
+    const time_to = new Date().toISOString();
 
     let oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-    const time_from = this.formatDateString(oneDayAgo);
+    const time_from = oneDayAgo.toISOString();
 
     return [time_from, time_to];
   }
