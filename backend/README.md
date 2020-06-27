@@ -62,3 +62,5 @@ php artisan up		// bring out of maintenance mode
 ```
 php artisan list
 ```
+
+## Project's structure
