@@ -5,6 +5,15 @@ export default class Logger {
   private logger: fs.WriteStream;
 
   constructor() {
+    if (!fs.existsSync("logs/server.log")) {
+      fs.mkdir("logs", (err) => {
+        if (err) throw err;
+        fs.writeFile("logs/server.log", "", (err) => {
+          if (err) throw err;
+          console.log("File 'server.log' is created successfully.");
+        });
+      });
+    }
     this.logger = fs.createWriteStream("logs/server.log", {
       flags: "a",
     });
