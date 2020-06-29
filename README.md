@@ -24,4 +24,4 @@ Some of the features which were not implemented yet:
 - [ ] Events  page. The idea is to allow user to choose conditions how the Smart Power Socket should work. For example, if the power is more than 500W, then the socket should stop working.
 - [ ] Better UI/UX. It is not possible to use Tabs for navigation as well as better design, as UI was created by technicians, not designers.
 - [ ] Tests are not present. Therefore, it is quite important to write some tests for all parts of the project in the future. 
-- [ ] Due to lockdown in the spring 2020, it was not possible to create real Smart Power Socket. Therefore, there is a lot of work to create our own smart device. 
+- [ ] Due to lockdown in the spring 2020, it was not possible to create real Smart Power Socket device. Therefore, there is a lot of work to create our own smart device. 
