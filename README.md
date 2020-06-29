@@ -3,7 +3,7 @@
  
 # Goal of the project
   1) Create a Smart Power Socket device which will be able to measure power input and collect statistics about power usage.
-  2) Create software ecosystem where user ir able to turn on/off device, to browse the statistics of power usage and to create conditions which the smart device should execute.
+  2) Create software ecosystem where user is able to turn on/off device, to browse the statistics of power usage and to create conditions which the smart device should execute.
   3) Gain new knowledge in working with microcontrollers and creating full-stack web application.  
 
 # How to run this project
