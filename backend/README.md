@@ -103,7 +103,7 @@ They are described in `routes/api.php`.
 -   `sockets` routes:
     -   POST `api/sockets/add` - **{ unique_id: number }** - handles the addition of the new Smart Power Socket.
     -   PUT `api/sockets/connect` - **{ name: string, description?: string, unique_id: number }** - connects new Smart Power Socket from the frontend.
-    -   GET `api/sockets/list` - shows all available for a user sockets.
+    -   GET `api/sockets/list` - shows all sockets which are available for a user.
     -   PUT `api/sockets/update-info` - **{ name: string, description?: string }** - updates information about socket itself, e.g. name, description.
     -   PUT `api/sockets/{id}` - **{ switch_state: number(0 or 1) }** - switches the Smart Power Socket on and off.
     -   DELETE `api/sockets/{id}` - deletes the specific socket.
