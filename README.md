@@ -4,7 +4,7 @@
 # Goal of the project
   1) Create a Smart Power Socket device which will be able to measure power input and collect statistics about power usage.
   2) Create software ecosystem where user is able to turn on/off device, to browse the statistics of power usage and to create conditions which the smart device should execute.
-  3) Gain new knowledge in working with microcontrollers and creating full-stack web application.  
+  3) Gain new knowledge in working with microcontrollers and creating full-stack web applications.  
 
 # How to run this project
   1) Follow the instructions in README file to install all dependencies in the [arduino_firmware](https://github.com/4math/SPS/tree/develop/arduino_firmware), [backend](https://github.com/4math/SPS/tree/develop/backend), [client](https://github.com/4math/SPS/tree/develop/client), [ws-server](https://github.com/4math/SPS/tree/develop/ws-server) folders.
