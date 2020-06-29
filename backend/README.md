@@ -98,7 +98,7 @@ They are described in `routes/api.php`.
 
 -   `auth` routes:
     -   POST `api/auth/login` - **{ email: string, password: string }** - handles user logging into the system.
-    -   POST `api/auth/register` - **{ name: string, email: string, password }** - handles user registration into the system.
+    -   POST `api/auth/register` - **{ name: string, email: string, password: string }** - handles user registration into the system.
     -   GET `api/auth/refresh` - handles JWT refresh.
 -   `sockets` routes:
     -   POST `api/sockets/add` - **{ unique_id: number }** - handles the addition of the new Smart Power Socket.
