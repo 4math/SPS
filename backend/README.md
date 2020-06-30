@@ -92,23 +92,6 @@ Main code is located in `app` folder:
     -   `SocketsController.php` - controls addition, deletion, updating of the socket itself and the information about it.
     -   `UsersController.php` - controls deletion and updating for user data.
 
-## API requests routes
+## API requests
 
-They are described in `routes/api.php`.
-
--   `auth` routes:
-    -   POST `api/auth/login` - **{ email: string, password: string }** - handles user logging into the system.
-    -   POST `api/auth/register` - **{ name: string, email: string, password: string }** - handles user registration into the system.
-    -   GET `api/auth/refresh` - handles JWT refresh.
--   `sockets` routes:
-    -   POST `api/sockets/add` - **{ unique_id: number }** - handles the addition of the new Smart Power Socket.
-    -   PUT `api/sockets/connect` - **{ name: string, description?: string, unique_id: number }** - connects new Smart Power Socket from the frontend.
-    -   GET `api/sockets/list` - shows all sockets which are available for a user.
-    -   PUT `api/sockets/update-info` - **{ name: string, description?: string }** - updates information about socket itself, e.g. name, description.
-    -   PUT `api/sockets/{id}` - **{ switch_state: number(0 or 1) }** - switches the Smart Power Socket on and off.
-    -   DELETE `api/sockets/{id}` - deletes the specific socket.
--   `measurements` routes:
-    -   POST `api/measurements/add` - **{ power: number }** - adds new measurement to a socket.
-    -   GET `api/measurements/list` - shows the list of the measurements for the specific socket.
-    -   DELETE `api/measurements/{id}` - deletes specific measurement.
-    -   POST `api/measurements/get-period` - **{ time_from: string(ISO Date), time_to: string(ISO Date) }** - gets all measurements in the given interval of time.
+Described in [Wiki](https://github.com/4math/SPS/wiki/API-requests).
