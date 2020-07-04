@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
-    public function indexD()
-    {
-        return response(User::all()->jsonSerialize(), Response::HTTP_OK);
-    }
-
     public function update(Request $request)
     {
         Auth::user()->name = $request->name;

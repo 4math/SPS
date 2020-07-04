@@ -37,6 +37,7 @@ class AuthController extends Controller
                 'errors' => $v->errors()
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
+
         $user = new User;
         $user->name = $request->name;
         $user->email = $request->email;
@@ -47,13 +48,6 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // $credentials = $request->only('email', 'password');
-        // if ($token = $this->guard()->attempt($credentials)) {
-        //     return response()->json(['status' => 'success'], Response::HTTP_OK)->header('Authorization', $token);
-        // }
-        // return response()->json(['error' => 'login_error'], 401);
-
-        //Another version. Error checking with try...catch is possible
         $credentials = $request->only('email', 'password');
         try {
             $token = JWTAuth::attempt($credentials);
@@ -76,22 +70,11 @@ class AuthController extends Controller
 
     public function user()
     {
-        // $user = User::find(Auth::id());
-        // return response($user->jsonSerialize(), Response::HTTP_OK);
-
-        // We can get user and all his dependencies without filtering entire table
         return response(Auth::user(), Response::HTTP_OK);
     }
 
     public function refresh()
     {
-        // if ($token = $this->guard()->refresh()) {
-        //     return response()
-        //         ->json(['status' => 'success'], Response::HTTP_OK)
-        //         ->header('Authorization', $token);
-        // }
-        // return response()->json(['error' => 'refresh_token_error'], 401);
-
         try {
             $token = $this->guard()->refresh();
         } catch (JWTException $e) {

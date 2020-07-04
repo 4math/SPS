@@ -4,21 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Classes\Model\Measurements;
 use App\Classes\Model\Socket;
-use App\Events\WebSocketPublish;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
-use App\Console\Commands\WebSocketPublishInstance;
-
 class MeasurementsController extends Controller
 {
-    public function indexD()
-    {
-        return response(Measurements::all()->jsonSerialize(), Response::HTTP_OK);
-    }
-
     public function add(Request $request)
     {
         $v = Validator::make($request->all(), [
@@ -30,7 +22,8 @@ class MeasurementsController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $socket = Socket::whereUniqueId($request->unique_id)->first();
+        $socket = Socket::whereUniqueId($request->unique_id)
+            ->first();
         if(!$socket->is_connected)
         {
             return response()->json(['is_connected' => $socket->is_connected], Response::HTTP_FORBIDDEN);
@@ -41,15 +34,10 @@ class MeasurementsController extends Controller
         $measurement->created_at = now();
         $measurement->save();
 
-        // $redis = WebSocketPublishInstance::getRedisClient();
-        // $redis->publish('test', json_encode(['event' => 'messages.new', 'data' => 'hello, world!']));
-
         $redis = new \Predis\Client([
             'scheme' => 'tcp',
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'port' => env('REDIS_PORT', 6379), 
-            // 'host' => '127.0.0.1',
-            // 'port' => 6379,
             'persistent' => true,
         ]);
         $redis->publish(env('REDIS_BACKEND_FRONTEND_CHANNEL_NAME', 'sps_backend_frontend'), 
@@ -79,12 +67,6 @@ class MeasurementsController extends Controller
             return response(null, Response::HTTP_FORBIDDEN);
         }
 
-        // return response(
-        //     Measurements::all()->where('socket_id', $socket_id)->toArray()->jsonSerialize(),
-        //     Response::HTTP_OK
-        // );
-
-        // We can get socket Measurements without filtering entire Measurements table
         return response($socket->measurements, Response::HTTP_OK);
     }
 
@@ -101,6 +83,7 @@ class MeasurementsController extends Controller
         if($measurements->socket->user->id != Auth::id()){
             return response(null, Response::HTTP_FORBIDDEN);
         }
+        
         Measurements::destroy($id);
         return response(null, Response::HTTP_OK);
         
