@@ -46,13 +46,20 @@ class MeasurementsController extends Controller
 
         $redis = new \Predis\Client([
             'scheme' => 'tcp',
-            // 'host' => env('REDIS_HOST', '127.0.0.1'),
-            // 'port' => env('REDIS_PORT', 6379), 
-            'host' => '127.0.0.1',
-            'port' => 6379,
+            'host' => env('REDIS_HOST', '127.0.0.1'),
+            'port' => env('REDIS_PORT', 6379), 
+            // 'host' => '127.0.0.1',
+            // 'port' => 6379,
             'persistent' => true,
         ]);
-        $redis->publish('test', json_encode(['event' => 'messages.new', 'data' => $request->power, 'userId' => $socket->user_id, 'socketId' => $socket->unique_id, 'timestamp' => $measurement->created_at]));
+        $redis->publish(env('REDIS_BACKEND_FRONTEND_CHANNEL_NAME', 'sps_backend_frontend'), 
+        json_encode([
+            'event' => 'messages.new', 
+            'data' => $request->power, 
+            'userId' => $socket->user_id, 
+            'socketId' => $socket->unique_id, 
+            'timestamp' => $measurement->created_at,
+            ]));
 
         return response()->json(['state' => $socket->switch_state], Response::HTTP_OK);
     }
