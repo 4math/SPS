@@ -5,8 +5,8 @@
 - cp config .config
 
 ## CMake build
-- in [cmake](https://github.com/4math/SPS/tree/develop/emulator/cmake) folder
+- in [cmake](https://github.com/4math/SPS/tree/master/emulator/cmake) folder
 
 ## Visual Studio Build
-- in [vs](https://github.com/4math/SPS/tree/develop/emulator/vs) folder
+- in [vs](https://github.com/4math/SPS/tree/master/emulator/vs) folder
 
