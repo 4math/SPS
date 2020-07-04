@@ -2,18 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
+use App\Classes\Model\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
-    public function indexD()
-    {
-        return response(User::all()->jsonSerialize(), Response::HTTP_OK);
-    }
-
     public function update(Request $request)
     {
         Auth::user()->name = $request->name;

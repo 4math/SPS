@@ -3,28 +3,44 @@
     <h1>Welcome to the dashboard, {{ getProfile.name }}!</h1>
     <Socket
       v-for="socket in sockets"
-      :key="socket.id"
+      :id="socket.id"
+      :key="parseInt(socket.unique_id, 10)"
+      :unique-id="parseInt(socket.unique_id, 10)"
       v-bind="socket"
-      :title="socket.name"
+      :name="socket.name"
       :description="socket.description"
       :state="socket.switch_state"
+      :momentum-value="socket.momentumValue"
       @put="put"
       @commitDeletion="commitDeletion"
+      @commitEdit="commitEdit"
     />
 
-    <b-button id="add-device" variant="primary" @click="showModal = !showModal">
+    <b-button
+      id="add-device"
+      variant="primary"
+      @click="showSocketRegisterModal = !showSocketRegisterModal"
+    >
       +
     </b-button>
-    
-    <DeviceRegister
-      :show="showModal"
-      @closeModal="showModal = !showModal"
+
+    <SocketRegister
+      :show-socket-register="showSocketRegisterModal"
+      @closeModal="showSocketRegisterModal = !showSocketRegisterModal"
       @registerSocket="registerSocket"
     />
     <Confirm
       :show-confirm="showConfirm"
       @closeConfirm="showConfirm = !showConfirm"
       @confirm="confirmToDelete"
+    />
+
+    <SocketUpdateInfo
+      :show-socket-update-info="showSocketUpdateInfoModal"
+      :given-name="nameToUpdate"
+      :given-description="descToUpdate"
+      @closeModal="showSocketUpdateInfoModal = !showSocketUpdateInfoModal"
+      @socketUpdateInfo="confirmToUpdate"
     />
   </div>
 </template>
@@ -34,27 +50,66 @@ import { mapGetters } from "vuex";
 import { USER_REQUEST } from "@/store/actions/user";
 import store from "@/store";
 import Socket from "@/components/Socket.vue";
-import DeviceRegister from "@/components/DeviceRegister.vue";
-import Confirm from "@/components/Confirm.vue";
+import SocketRegister from "@/components/modals/SocketRegister.vue";
+import Confirm from "@/components/modals/Confirm.vue";
+import SocketUpdateInfo from "@/components/modals/SocketUpdateInfo.vue";
 import SocketData from "@/objects/Socket.js";
+import io from "socket.io-client";
 
 export default {
   name: "Dashboard",
   components: {
     Socket,
-    DeviceRegister,
+    SocketRegister,
     Confirm,
+    SocketUpdateInfo,
   },
   data() {
     return {
       sockets: [],
-      showModal: false,
+      showSocketRegisterModal: false,
+      showSocketUpdateInfoModal: false,
       showConfirm: false,
       idToDelete: -1,
+      nameToUpdate: "",
+      descToUpdate: "",
+      idToUpdate: -1,
     };
   },
   computed: {
     ...mapGetters(["getProfile"]),
+  },
+  mounted() {
+    // eslint-disable-next-line no-undef
+    this.socket = io.connect(process.env.VUE_APP_WS_URL, {
+      transports: ["websocket"],
+      upgrade: false,
+      query: `userid=${this.getProfile.id}`,
+    });
+
+    this.socket.on("connect", () => {
+      console.log("CONNECTED");
+
+      this.socket.on("messages.new", (data) => {
+        console.log("NEW PRIVATE MESSAGE", data);
+        if (this.sockets.length !== 0) {
+          this.sockets.find(
+            (socket) =>
+              parseInt(socket.unique_id, 10) === parseInt(data.socketId, 10)
+          ).momentumValue = data.data < 0 ? -1 : data.data;
+        }
+      });
+
+      this.socket.on("disconnect", () => {
+        console.log("DISCONNECTING");
+        this.socket.disconnect();
+      });
+
+      // Kick it off
+      // Can be any channel. For private channels, Laravel should pass it upon page load (or given by another user).
+      const channel = process.env.VUE_APP_WS_REDIS_CHANNEL;
+      this.socket.emit("subscribe-to-channel", { channel: channel });
+    });
   },
   created() {
     this.axios
@@ -84,8 +139,11 @@ export default {
           unique_id: socketID,
         });
         this.sockets.push(new SocketData(data));
+        this.makeToast(`${data.name} has been added`, "success");
       } catch (err) {
-        console.error(err);
+        for (let e in err.errors) {
+          this.makeToast(err.errors[e][0]);
+        }
       }
     },
 
@@ -101,9 +159,49 @@ export default {
           (socket) => socket.id === this.idToDelete
         );
         this.sockets.splice(index, 1);
+        this.makeToast(`Socket has successfully been deleted`, "success");
       } catch (err) {
         console.error(err);
+        this.makeToast(`An error occured during the deletion process`);
       }
+    },
+
+    commitEdit(id, name, description) {
+      this.showSocketUpdateInfoModal = true;
+      this.idToUpdate = id;
+      this.nameToUpdate = name;
+      this.descToUpdate = description ? description : "";
+    },
+
+    async confirmToUpdate(name, description) {
+      try {
+        await this.axios.put(`/sockets/update-info/${this.idToUpdate}`, {
+          name: name,
+          description: description,
+        });
+        const socket = this.sockets.find(
+          (socket) => socket.id === this.idToUpdate
+        );
+        socket.name = name;
+        socket.description = description;
+        this.makeToast(
+          `Socket's information has successfully been updated`,
+          "success"
+        );
+      } catch (err) {
+        console.error(err);
+        this.makeToast(`An error occured during the update process`);
+      }
+    },
+
+    makeToast(message, variant = "danger") {
+      this.$bvToast.toast(message, {
+        title: "SPS message",
+        toaster: "b-toaster-bottom-right",
+        autoHideDelay: 8000,
+        appendToast: true,
+        variant: variant,
+      });
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -118,6 +216,10 @@ export default {
         });
     }
   },
+  beforeRouteLeave: function(to, from, next) {
+    this.socket.emit("disconnect");
+    next();
+  },
 };
 </script>
 
@@ -129,6 +231,7 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+  height: calc(100% - 102px) !important;
 }
 
 #add-device {

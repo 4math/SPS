@@ -1,16 +1,19 @@
 module.exports = {
-    runtimeCompiler: true,
-    css: {
-        loaderOptions: {
-            scss: {
-                // prependData: `@import "~@/scss/_variables.scss";`
-            }
-        }
+  runtimeCompiler: true,
+  css: {
+    loaderOptions: {
+      scss: {
+        // prependData: `@import "~@/scss/_variables.scss";`
+      },
     },
-    devServer: {
-        overlay: {
-            warnings: true,
-            errors: true
-        }
-    }
-}
+  },
+  devServer: {
+    overlay: {
+      warnings: true,
+      errors: true,
+    },
+  },
+  configureWebpack: {
+    devtool: "source-map",
+  },
+};

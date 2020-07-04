@@ -35,6 +35,12 @@
             </router-link>
           </b-nav-item>
 
+          <b-nav-item v-if="isAuthenticated && !authLoading">
+            <router-link class="nav-link" to="/charts">
+              <strong>Charts</strong>
+            </router-link>
+          </b-nav-item>
+
           <b-nav-item v-if="isAuthenticated || authLoading" @click="logout">
             <span class="nav-link">
               <strong>Logout</strong>

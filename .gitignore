@@ -1,2 +1,6 @@
 backend/.phpstorm.meta.php
 .vscode/
+emulator/cmake/*
+emulator/.config
+!emulator/cmake/CMakeLists.txt
+!emulator/cmake/README.md

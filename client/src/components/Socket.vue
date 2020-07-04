@@ -1,7 +1,7 @@
 <template>
   <div id="socket-card">
     <b-card
-      :title="title"
+      :title="name"
       :img-src="image"
       img-alt="Image"
       img-top
@@ -25,14 +25,18 @@
         </b-input-group-prepend>
       </b-input-group>
 
+      <b-card-text class="text">
+        Last Power value: {{ momentumValue !== -1 ? momentumValue : "-" }} W
+      </b-card-text>
+
       <b-dropdown id="actions" text="Actions" class="lg" menu-class="w-100">
-        <b-dropdown-item-button>
-          Go to the chart tab
+        <b-dropdown-item-button @click="showChartsPage">
+          Show the chart
         </b-dropdown-item-button>
-        <b-dropdown-item-button>
-          Go to the event tab
+        <b-dropdown-item-button @click="commitEdit">
+          Edit Socket's information
         </b-dropdown-item-button>
-        <b-dropdown-item-button variant="danger" @click="commit">
+        <b-dropdown-item-button variant="danger" @click="commitDeletion">
           Delete Socket
         </b-dropdown-item-button>
       </b-dropdown>
@@ -41,28 +45,34 @@
 </template>
 
 <script>
+import router from "@/router/router";
+
 export default {
   name: "Socket",
   props: {
     id: {
       type: Number,
       required: true,
-      default: 0,
     },
-    title: {
+    uniqueId: {
+      type: Number,
+      required: true,
+    },
+    name: {
       type: String,
       required: true,
-      default: "",
     },
     description: {
       type: String,
-      required: true,
       default: "",
     },
     state: {
       type: Boolean,
       required: true,
-      default: false,
+    },
+    momentumValue: {
+      type: Number,
+      required: true,
     },
   },
   data() {
@@ -79,8 +89,14 @@ export default {
     put(value) {
       this.$emit("put", this.id, value);
     },
-    commit() {
+    commitEdit() {
+      this.$emit("commitEdit", this.id, this.name, this.description);
+    },
+    commitDeletion() {
       this.$emit("commitDeletion", this.id);
+    },
+    showChartsPage() {
+      router.push(`charts/${this.uniqueId}`);
     },
   },
 };
@@ -111,6 +127,11 @@ export default {
 label {
   display: inline-block !important;
   padding: 1em;
+}
+
+.text {
+  font-size: 1.2em;
+  text-align: center;
 }
 
 #actions {
