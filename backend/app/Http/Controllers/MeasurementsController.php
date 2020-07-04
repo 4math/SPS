@@ -63,10 +63,8 @@ class MeasurementsController extends Controller
         if ($socket->user->id != Auth::id()) {
             return response(null, Response::HTTP_FORBIDDEN);
         }
-        
-        $measurements = Measurements::all()
-            ->where('socket_id', $socket->id);
-        return response($measurements->jsonSerialize(), Response::HTTP_OK);
+
+        return response($socket->data()->get(), Response::HTTP_OK);
     }
 
     public function delete($id)
@@ -90,15 +88,16 @@ class MeasurementsController extends Controller
 
     public function getDataInPeriod(Request $request)
     {
-
-        //TODO: decline access for any user, so that he would be able to access only his sockets data
-
         try {
             $socket = Socket::findOrFail($request->id);
         } catch (\Throwable $th) {
             return response()->json([
                 'error' => $th->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($socket->user->id != Auth::id()) {
+            return response(null, Response::HTTP_FORBIDDEN);
         }
 
         $data = $socket->data()
