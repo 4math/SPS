@@ -22,7 +22,4 @@ public:
 	void ParseDataFromROM();
 	void ConnectToWiFi();
 	bool ConnectToDB();
-
-	Socket();
-	~Socket();
 };

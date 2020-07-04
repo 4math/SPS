@@ -39,16 +39,16 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 0 !important;
-  height: calc(100% - 102px) !important;
+  height: calc(100%) !important;
 }
 
 html, body {
-  height: calc(100% - 102px) !important;
+  height: 100% !important;
   width: 100%;
   margin: 0;
 }
 
 #app-container {
-  height: 100% !important;
+  height: calc(100% - 20px) !important;
 }
 </style>

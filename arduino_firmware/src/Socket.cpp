@@ -98,11 +98,3 @@ bool Socket::ConnectToDB()
 	}
 	return true;
 }
-
-Socket::Socket(/* args */)
-{
-}
-
-Socket::~Socket()
-{
-}

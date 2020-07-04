@@ -14,18 +14,17 @@ class MeasurementsController extends Controller
     public function add(Request $request)
     {
         $v = Validator::make($request->all(), [
-            'unique_id' => 'required|exists:sockets'
+            'unique_id' => 'required|exists:sockets',
         ]);
         if ($v->fails()) {
             return response()->json([
-                'errors' => $v->errors()
+                'errors' => $v->errors(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $socket = Socket::whereUniqueId($request->unique_id)
             ->first();
-        if(!$socket->is_connected)
-        {
+        if(!$socket->is_connected) {
             return response()->json(['is_connected' => $socket->is_connected], Response::HTTP_FORBIDDEN);
         }
         $measurement = new Measurements();
@@ -52,9 +51,8 @@ class MeasurementsController extends Controller
         return response()->json(['state' => $socket->switch_state], Response::HTTP_OK);
     }
 
-    public function list($socket_id)
-    {
-        try{
+    function list($socket_id) {
+        try {
             $socket = Socket::findOrFail($socket_id);
         } catch (\Throwable $th) {
             return response()->json([
@@ -62,8 +60,7 @@ class MeasurementsController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        if($socket->user->id != Auth::id())
-        {
+        if ($socket->user->id != Auth::id()) {
             return response(null, Response::HTTP_FORBIDDEN);
         }
 
@@ -79,13 +76,35 @@ class MeasurementsController extends Controller
                 'error' => $th->getMessage(),
             ], Response::HTTP_BAD_REQUEST);
         }
-        
-        if($measurements->socket->user->id != Auth::id()){
+
+        if ($measurements->socket->user->id != Auth::id()) {
             return response(null, Response::HTTP_FORBIDDEN);
         }
         
         Measurements::destroy($id);
         return response(null, Response::HTTP_OK);
-        
+
+    }
+
+    public function getDataInPeriod(Request $request)
+    {
+
+        //TODO: decline access for any user, so that he would be able to access only his sockets data
+
+        try {
+            $socket = Socket::findOrFail($request->id);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => $th->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $data = $socket->data()
+            ->where('created_at', '>=', $request->time_from)
+            ->where('created_at', '<=', $request->time_to)
+            ->get();
+
+        return response()->json($data, Response::HTTP_OK);
+
     }
 }
