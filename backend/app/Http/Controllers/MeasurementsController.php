@@ -63,8 +63,10 @@ class MeasurementsController extends Controller
         if ($socket->user->id != Auth::id()) {
             return response(null, Response::HTTP_FORBIDDEN);
         }
-
-        return response($socket->measurements, Response::HTTP_OK);
+        
+        $measurements = Measurements::all()
+            ->where('socket_id', $socket->id);
+        return response($measurements->jsonSerialize(), Response::HTTP_OK);
     }
 
     public function delete($id)
